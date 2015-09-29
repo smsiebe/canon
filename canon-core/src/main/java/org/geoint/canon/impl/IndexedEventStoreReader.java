@@ -37,33 +37,53 @@ public class IndexedEventStoreReader<E extends EventMessage>
 
     public IndexedEventStoreReader(IndexedEventStream indexedStream) {
         this.indexedStream = indexedStream;
+        currentId = indexedStream.getIndex().getFirstId();
     }
-    
-    
 
     @Override
     public boolean hasNext() {
-
+        if (nextId == null) {
+            //cache next event id
+            nextId = indexedStream.getIndex().getNextId(currentId);
+        }
+        return nextId != null;
     }
 
     @Override
     public E next() throws StreamReadException {
-
+        if (nextId == null) {
+            if (!hasNext()) {
+                throw new StreamReadException(indexedStream.getChannel().getName(),
+                        indexedStream.getName(), "No next event in stream.");
+            }
+        }
+        try {
+            return (E) indexedStream.getEventStore().getEventById(currentId);
+        } finally {
+            setEventIdPosition(nextId);
+        }
     }
 
     @Override
     public void setPositionByEventId(String eventId) throws UnknownEventException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!indexedStream.getIndex().eventExists(eventId)) {
+            throw new UnknownEventException(eventId);
+        }
+        setEventIdPosition(eventId);
     }
 
     @Override
     public EventStream getStream() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return indexedStream;
     }
 
     @Override
     public void close() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        indexedStream.close();
     }
 
+    private void setEventIdPosition(String eventId) {
+        currentId = nextId;
+        nextId = null;
+    }
 }

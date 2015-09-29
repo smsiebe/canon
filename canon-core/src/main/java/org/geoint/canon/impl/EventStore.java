@@ -15,6 +15,10 @@
  */
 package org.geoint.canon.impl;
 
+import java.io.Closeable;
+import java.io.Flushable;
+import org.geoint.canon.EventMessage;
+
 /**
  * Implementation interface - not intended for public use.
  * <p>
@@ -22,6 +26,7 @@ package org.geoint.canon.impl;
  * 
  * @author steve_siebert
  */
-public interface EventStore {
+public interface EventStore extends Closeable, Flushable {
     
+    EventMessage getEventById (String eventId);
 }

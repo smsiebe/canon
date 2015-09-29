@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.local;
+package org.geoint.canon.impl;
 
-import org.geoint.canon.EventChannel;
+import org.geoint.canon.stream.ChannelStream;
 
 /**
- * Local, file-backed, persistent event channel.
+ * ChannelStream implementation backed by an IndexedEventStream.
  *
  * @author steve_siebert
  */
-public class FileEventChannel implements EventChannel {
+public class IndexedChannelStream implements ChannelStream {
+
+    private final IndexedEventStream indexedStream;
+
+    public IndexedChannelStream(IndexedEventStream indexedStream) {
+        this.indexedStream = indexedStream;
+    }
 
 }

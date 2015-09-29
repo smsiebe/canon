@@ -25,21 +25,40 @@ import java.io.Flushable;
  *
  * @author steve_siebert
  */
-public interface StreamIndex extends Closeable, AutoCloseable, Flushable{
+public interface StreamIndex extends Closeable, AutoCloseable, Flushable {
+
+    /**
+     * Return the first event id of the stream, or null if there isn't an event
+     * in the stream.
+     *
+     * @return first event id or null
+     */
+    default String getFirstId() {
+        return getNextId(null);
+    }
 
     /**
      * Returns the next event ID, or null if there isn't a next id.
-     * 
-     * @param eventId
-     * @return 
+     *
+     * @param eventId event id, or null to return the first index id
+     * @return
      */
     String getNextId(String eventId);
 
     /**
      * Returns the last event ID of the stream.
-     * 
-     * @return last event id of the stream
+     *
+     * @return last event id of the stream, or null if no events exist in the
+     * stream
      */
-    public String getLastEventId();
-    
+    String getLastId();
+
+    /**
+     * Check if the stream index contains the specified event, by event ID.
+     *
+     * @param eventId
+     * @return true if the stream contains the event, otherwise false
+     */
+    boolean eventExists(String eventId);
+
 }

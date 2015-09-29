@@ -24,29 +24,28 @@ import org.geoint.canon.stream.reader.EventReader;
 
 /**
  * EventStore-backed indexed event stream.
- * 
+ *
  * @author steve_siebert
  */
 public class IndexedEventStream implements EventStream {
-    
-    private final AbstractEventChannel channel;
+
+    private final IndexedEventChannel channel;
     private final String streamName;
     private final EventStore events;
     private final StreamIndex index;
-    private final 
 
-    public IndexedEventStream(AbstractEventChannel channel, String streamName, 
+    public IndexedEventStream(IndexedEventChannel channel, String streamName,
             EventStore events, StreamIndex index) {
         this.channel = channel;
         this.streamName = streamName;
         this.events = events;
         this.index = index;
     }
-    
+
     StreamIndex getIndex() {
         return index;
     }
-    
+
     EventStore getEventStore() {
         return events;
     }
@@ -83,7 +82,7 @@ public class IndexedEventStream implements EventStream {
 
     @Override
     public String getLastEventId() {
-        return index.getLastEventId();
+        return index.getLastId();
     }
 
     @Override
@@ -95,6 +94,5 @@ public class IndexedEventStream implements EventStream {
     public void close() throws IOException {
         index.close();
     }
-    
-    
+
 }

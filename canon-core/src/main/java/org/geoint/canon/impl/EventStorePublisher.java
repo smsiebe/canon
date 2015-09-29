@@ -25,4 +25,12 @@ import org.geoint.canon.publish.EventPublisher;
 public class EventStorePublisher implements EventPublisher {
     
     private final EventStore store;
+    private final StreamIndex channelIndex;
+
+    public EventStorePublisher(EventStore store, StreamIndex channelIndex) {
+        this.store = store;
+        this.channelIndex = channelIndex;
+    }
+    
+    
 }

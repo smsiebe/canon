@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
+package org.geoint.canon.impl.codec;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
+import org.geoint.canon.codec.EventCodec;
 
 /**
- * Implication interface - not intended for public use.
- * <p>
- * Low-level management of a channels streams.
+ * EventCodec resolver that supports hierarchical tiered codec resolution.
  *
  * @author steve_siebert
  */
-public interface StreamManager {
+public class HierarchicalCodecResolver {
 
-    /**
-     * Returns all the managed stream names.
-     *
-     * @return all managed stream names for the channel
-     */
-    Set<String> getStreamNames();
+    private HierarchicalCodecResolver parentTier;
+    private Collection<EventCodec> tierCodecs;
 
-    /**
-     * Returns the stream index for the specified stream name.
-     *
-     * @param streamName
-     * @return the index for the stream name
-     */
-    Optional<StreamIndex> findIndex(String streamName);
+    public HierarchicalCodecResolver(EventCodec... codecs) {
+        tierCodecs = Arrays.asList(codecs);
+    }
+
+    public Optional<EventCodec> resolve(String eventType) {
+        return tierCodecs.stream()
+                .filter((c) -> c.isSupported(eventType))
+                .findFirst();
+    }
+
 }
