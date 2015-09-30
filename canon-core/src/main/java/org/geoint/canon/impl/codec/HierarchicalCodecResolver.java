@@ -27,17 +27,35 @@ import org.geoint.canon.codec.EventCodec;
  */
 public class HierarchicalCodecResolver {
 
-    private HierarchicalCodecResolver parentTier;
-    private Collection<EventCodec> tierCodecs;
+    private final HierarchicalCodecResolver parentTier;
+    private final Collection<EventCodec> tierCodecs;
 
-    public HierarchicalCodecResolver(EventCodec... codecs) {
-        tierCodecs = Arrays.asList(codecs);
+    public HierarchicalCodecResolver(HierarchicalCodecResolver parent,
+            EventCodec... tierCodecs) {
+        this.parentTier = parent;
+        this.tierCodecs = Arrays.asList(tierCodecs);
     }
 
+    public HierarchicalCodecResolver(EventCodec... tierCodecs) {
+        this.parentTier = null;
+        this.tierCodecs = Arrays.asList(tierCodecs);
+    }
+
+    /**
+     * Resolve the codec from the current tier or parent tier.
+     *
+     * @param eventType
+     * @return resolved codec or null
+     */
     public Optional<EventCodec> resolve(String eventType) {
-        return tierCodecs.stream()
+        return Optional.ofNullable(tierCodecs.stream()
                 .filter((c) -> c.isSupported(eventType))
-                .findFirst();
+                .findFirst()
+                .orElseGet(() -> (parentTier != null)
+                                ? parentTier.resolve(eventType).orElseGet(() -> null)
+                                : null
+                )
+        );
     }
 
 }
