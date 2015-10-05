@@ -13,15 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
+package org.geoint.canon.impl.task;
 
-import org.geoint.canon.stream.reconciliation.EventArbitor;
+import org.geoint.canon.Canon;
 
 /**
- * Default EventArbitor implementation.
+ * Task context.
  * 
  * @author steve_siebert
  */
-public class DefaultEventArbitor implements EventArbitor{
+public interface TaskContext {
+   
+    /**
+     * Associated Canon instance for the task.
+     * 
+     * @return the canon instance related to this task
+     */
+    Canon getCanon();
+    
+    /**
+     * Manager for this task,
+     * 
+     * @return returns the manager this task is registered with, or null if 
+     * the task is not managed
+     */
+    TaskManager getTaskManager();
     
 }

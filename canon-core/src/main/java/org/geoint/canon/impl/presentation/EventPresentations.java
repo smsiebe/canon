@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
-
-import java.io.Closeable;
-import java.io.Flushable;
-import org.geoint.canon.EventMessage;
+package org.geoint.canon.impl.presentation;
 
 /**
- * Implementation interface - not intended for public use.
- * <p>
- * Low-level access to events.
- * 
+ *
  * @author steve_siebert
  */
-public interface EventStore extends Closeable, Flushable {
+public class EventPresentations {
     
-    EventMessage getEventById (String eventId);
 }

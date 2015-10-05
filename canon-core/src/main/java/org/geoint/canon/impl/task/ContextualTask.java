@@ -13,37 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
-
-import java.util.Collection;
-import java.util.Set;
-import org.geoint.canon.stream.EventStream;
+package org.geoint.canon.impl.task;
 
 /**
- * Implication interface - not intended for public use.
- * <p>
- * Low-level management of a channels streams.
+ * A task which has access to its contextual
  *
  * @author steve_siebert
  */
-public interface IndexedStreamManager {
+public interface ContextualTask {
 
     /**
-     * Returns all the managed stream names.
+     * Task name.
      *
-     * @return all managed stream names for the channel
+     * @return the task name
      */
-    Set<String> getStreamNames();
+    String getName();
 
     /**
-     * Returns the stream index for the specified stream name.
+     * Start the task.
      *
-     * @param streamName
-     * @return the index for the stream name
+     * @param context execution context
+     * @throws Throwable
      */
-    StreamIndex findOrCreateIndex(String streamName);
+    void start(TaskContext context) throws Throwable;
 
-    Collection<EventStream> getAll();
+    /**
+     * Stop the task.
+     *
+     * @throws Throwable
+     */
+    void stop() throws Throwable;
 
-    EventStream getStream(String streamName);
 }

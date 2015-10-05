@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
+package org.geoint.canon.impl.reconciliation;
 
-import org.geoint.canon.publish.EventPublisher;
+import org.geoint.canon.stream.reconciliation.EventArbitor;
 
 /**
- * Event publisher backed by an {@link EventStore} implementation.
+ * Default EventArbitor implementation.
  * 
  * @author steve_siebert
  */
-public class EventStorePublisher implements EventPublisher {
-    
-    private final EventStore store;
-    private final StreamIndex channelIndex;
-
-    public EventStorePublisher(EventStore store, StreamIndex channelIndex) {
-        this.store = store;
-        this.channelIndex = channelIndex;
-    }
-    
+public class DefaultEventArbitor implements EventArbitor {
     
 }

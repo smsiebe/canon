@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl;
-
-import org.geoint.canon.stream.ChannelStream;
+package org.geoint.canon.impl.task;
 
 /**
- * ChannelStream implementation backed by an IndexedEventStream.
+ * Executable task which may throw a checked exception.
  *
  * @author steve_siebert
  */
-public class IndexedChannelStream implements ChannelStream {
+@FunctionalInterface
+public interface Task {
 
-    private final IndexedEventStream indexedStream;
-
-    public IndexedChannelStream(IndexedEventStream indexedStream) {
-        this.indexedStream = indexedStream;
-    }
-
+    void execute() throws Throwable;
 }
