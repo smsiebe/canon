@@ -16,7 +16,8 @@
 package org.geoint.canon;
 
 /**
- *
+ * A Canon instance 
+ * 
  * @author steve_siebert
  */
 public class Canon {

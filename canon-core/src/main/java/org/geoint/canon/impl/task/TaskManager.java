@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import org.geoint.canon.Canon;
 
 /**
- * Manages background tasks.
+ * Manages background tasks of a Canon instance.
  *
  * @author steve_siebert
  */
