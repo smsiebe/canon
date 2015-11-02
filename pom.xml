@@ -6,9 +6,11 @@
     <version>1.0-BETA</version>
     <packaging>pom</packaging>
     <modules>
-        <module>canon-api</module>
-        <module>canon-core</module>
         <module>canon-server</module>
+        <module>canon-api</module>
+        <module>canon-spi</module>
+        <module>canon-client</module>
+        <module>canon-core</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

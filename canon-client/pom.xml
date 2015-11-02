@@ -6,7 +6,7 @@
         <artifactId>canon</artifactId>
         <version>1.0-BETA</version>
     </parent>
-    <artifactId>canon-server</artifactId>
+    <artifactId>canon-client</artifactId>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -15,4 +15,5 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    <name>canon-client</name>
 </project>

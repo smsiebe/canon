@@ -6,12 +6,12 @@
         <artifactId>canon</artifactId>
         <version>1.0-BETA</version>
     </parent>
-    <artifactId>canon-server</artifactId>
+    <artifactId>canon-spi</artifactId>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>canon-core</artifactId>
+            <artifactId>canon-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

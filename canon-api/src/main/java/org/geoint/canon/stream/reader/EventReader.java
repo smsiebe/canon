@@ -18,8 +18,8 @@ package org.geoint.canon.stream.reader;
 import java.io.Closeable;
 import org.geoint.canon.EventMessage;
 import org.geoint.canon.UnknownEventException;
-import org.geoint.canon.stream.EventStream;
-import org.geoint.canon.stream.StreamReadException;
+import org.geoint.canon.EventStream;
+import org.geoint.canon.StreamReadException;
 
 /**
  * Sequential event reader.

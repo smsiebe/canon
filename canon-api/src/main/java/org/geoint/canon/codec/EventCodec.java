@@ -31,10 +31,9 @@ public interface EventCodec<E> {
     /**
      * Determines if this codec can encode/decode the specified event type.
      *
-     * @param eventType
      * @return true if this codec can encode/decode this event
      */
-    boolean isSupported(String eventType);
+    String getSupportedEventType ();
 
     /**
      * Convert the domain event instance to event headers and encoded event
