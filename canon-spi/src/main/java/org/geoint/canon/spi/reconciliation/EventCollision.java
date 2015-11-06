@@ -16,7 +16,7 @@
 package org.geoint.canon.spi.reconciliation;
 
 import java.util.Objects;
-import org.geoint.canon.EventMessage;
+import org.geoint.canon.event.EventMessage;
 
 /**
  * Published when two events have been deemed a collision and must be

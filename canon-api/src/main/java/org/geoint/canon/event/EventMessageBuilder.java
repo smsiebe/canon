@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon;
+package org.geoint.canon.event;
 
 import java.io.InputStream;
 import org.geoint.canon.codec.EventCodec;

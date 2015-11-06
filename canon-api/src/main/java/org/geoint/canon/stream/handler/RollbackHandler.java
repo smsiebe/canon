@@ -15,7 +15,7 @@
  */
 package org.geoint.canon.stream.handler;
 
-import org.geoint.canon.EventMessage;
+import org.geoint.canon.event.EventMessage;
 
 /**
  * Specialized EventHandler interface that handles only channel rollback events,

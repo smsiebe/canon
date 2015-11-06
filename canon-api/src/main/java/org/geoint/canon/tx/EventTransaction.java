@@ -16,9 +16,9 @@
 package org.geoint.canon.tx;
 
 import java.util.concurrent.Future;
-import org.geoint.canon.AppendOutOfSequenceException;
-import org.geoint.canon.EventAppender;
-import org.geoint.canon.StreamAppendException;
+import org.geoint.canon.stream.AppendOutOfSequenceException;
+import org.geoint.canon.stream.EventAppender;
+import org.geoint.canon.stream.StreamAppendException;
 
 /**
  * ACID compliant transaction used to commit multiple events in a single commit.

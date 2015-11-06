@@ -18,7 +18,7 @@ package org.geoint.canon.codec;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import org.geoint.canon.EventMessage;
+import org.geoint.canon.event.EventMessage;
 
 /**
  * Converts an object to/from event messages.

@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import org.geoint.canon.EventMessage;
+import org.geoint.canon.event.EventMessage;
 
 /**
  * Event published upon successful transaction commit.

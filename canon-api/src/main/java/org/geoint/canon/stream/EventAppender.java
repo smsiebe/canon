@@ -1,4 +1,6 @@
-package org.geoint.canon;
+package org.geoint.canon.stream;
+
+import org.geoint.canon.event.EventMessageBuilder;
 
 /**
  * Appends events to a stream.

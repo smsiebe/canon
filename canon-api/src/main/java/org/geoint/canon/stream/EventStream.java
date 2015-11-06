@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon;
+package org.geoint.canon.stream;
 
+import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.tx.EventTransaction;
 import org.geoint.canon.stream.handler.EventHandler;

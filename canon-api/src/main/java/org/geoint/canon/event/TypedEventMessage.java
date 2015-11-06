@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon;
-
-import org.geoint.canon.EventStream;
-import org.geoint.canon.TypedEventMessage;
+package org.geoint.canon.event;
 
 /**
+ * Event message with a known event payload type.
  *
  * @author steve_siebert
- * @param <E> event type
+ * @param <E> domain event type
  */
-public interface TypedEventStream<E> extends EventStream<TypedEventMessage<E>> {
+public interface TypedEventMessage<E> extends EventMessage{
 
+    /**
+     * Return the domain event as an object instance.
+     * 
+     * @return 
+     */
+    E getEvent();
 }

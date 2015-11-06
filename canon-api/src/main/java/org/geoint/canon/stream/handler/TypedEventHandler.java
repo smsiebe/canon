@@ -15,7 +15,7 @@
  */
 package org.geoint.canon.stream.handler;
 
-import org.geoint.canon.TypedEventMessage;
+import org.geoint.canon.event.TypedEventMessage;
 
 /**
  * Handles only events that are decodable to the event type.

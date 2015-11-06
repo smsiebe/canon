@@ -1,4 +1,6 @@
-package org.geoint.canon;
+package org.geoint.canon.stream;
+
+import org.geoint.canon.stream.StreamAppendException;
 
 /**
  * Thrown if an event was attempted to be appended out of sequence.

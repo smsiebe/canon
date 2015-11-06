@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Steve Siebert <steve@t-3-solutions.com>.
+ * Copyright 2015 geoint.org.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon;
+package org.geoint.canon.stream;
 
-import org.geoint.canon.EventException;
+import org.geoint.canon.event.EventException;
+import org.geoint.canon.event.EventException;
 
 /**
+ * Thrown if there is a problem reading from an event stream.
  *
- * @author Steve Siebert <steve@t-3-solutions.com>
+ * @author steve_siebert
  */
-public class StreamAlreadyExistsException extends EventException {
+public class StreamReadException extends EventException {
 
     private final String channelName;
     private final String streamName;
 
-    public StreamAlreadyExistsException(String channelName, String streamName) {
-        super(message(channelName, streamName));
+    public StreamReadException(String channelName, String streamName, String message) {
+        super(prefixMessage(channelName, streamName, message));
         this.channelName = channelName;
         this.streamName = streamName;
     }
 
-    public StreamAlreadyExistsException(String channelName, String streamName, Throwable cause) {
-        super(message(channelName, streamName), cause);
+    public StreamReadException(String channelName, String streamName, String message, Throwable cause) {
+        super(prefixMessage(channelName, streamName, message), cause);
         this.channelName = channelName;
         this.streamName = streamName;
     }
@@ -46,8 +48,9 @@ public class StreamAlreadyExistsException extends EventException {
         return streamName;
     }
 
-    private static String message(String channelName, String streamName) {
-        return String.format("Stream '%s' already exists on channel '%s'.",
-                streamName, channelName);
+    private static String prefixMessage(String channelName, String streamName,
+            String message) {
+        return String.format("Problems reading events from stream %s-%s: %s",
+                channelName, streamName, message);
     }
 }

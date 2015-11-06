@@ -16,10 +16,10 @@
 package org.geoint.canon.stream.reader;
 
 import java.io.IOException;
-import org.geoint.canon.EventMessage;
-import org.geoint.canon.UnknownEventException;
-import org.geoint.canon.EventStream;
-import org.geoint.canon.StreamReadException;
+import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.event.UnknownEventException;
+import org.geoint.canon.stream.EventStream;
+import org.geoint.canon.stream.StreamReadException;
 
 /**
  * Decorates an EventReader.

@@ -13,33 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon;
+package org.geoint.canon.event;
 
 /**
- * Thrown when an unknown event was requested.
+ * Hierarchical parent type of all Canon checked exceptions.
  *
  * @author steve_siebert
  */
-public class UnknownEventException extends EventException {
+public abstract class EventException extends Exception {
 
-    private final String eventId;
-
-    public UnknownEventException(String eventId) {
-        super(message(eventId));
-        this.eventId = eventId;
+    public EventException() {
     }
 
-    public UnknownEventException(String eventId, Throwable cause) {
-        super(message(eventId), cause);
-        this.eventId = eventId;
+    public EventException(String message) {
+        super(message);
     }
 
-    public String getEventId() {
-        return eventId;
+    public EventException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    private static String message(String eventId) {
-        return String.format("Unknown event '%s'", eventId);
+    public EventException(Throwable cause) {
+        super(cause);
     }
 
 }

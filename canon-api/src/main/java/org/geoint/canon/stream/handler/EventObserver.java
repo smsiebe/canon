@@ -15,8 +15,8 @@
  */
 package org.geoint.canon.stream.handler;
 
-import org.geoint.canon.EventMessage;
-import org.geoint.canon.stream.event.ChannelRolledBack;
+import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.stream.event.StreamRolledBack;
 
 /**
  * Simplified EventHandler concerned only about handling application defined
@@ -34,7 +34,7 @@ public interface EventObserver<E extends EventMessage> extends EventHandler<E> {
      * @param event
      */
     @Override
-    default void rollback(ChannelRolledBack event) {
+    default void rollback(StreamRolledBack event) {
         //do nothing
     }
 }

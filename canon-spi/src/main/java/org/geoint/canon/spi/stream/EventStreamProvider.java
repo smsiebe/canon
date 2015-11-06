@@ -1,7 +1,7 @@
 package org.geoint.canon.spi.stream;
 
 import java.util.Optional;
-import org.geoint.canon.EventStream;
+import org.geoint.canon.stream.EventStream;
 
 /**
  * Resolves an EventStream for a specific transport type as defined by the 
@@ -21,10 +21,11 @@ public interface EventStreamProvider {
     boolean supportsScheme (String scheme);
     
     /**
-     * Attempts to create an 
+     * Returns the requested event stream.
+     * 
      * @param streamUrl
      * @return 
      */
-    Optional<EventStream> findStream (String streamUrl);
+    EventStream getStream (String streamUrl);
     
 }

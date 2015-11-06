@@ -25,13 +25,13 @@ package org.geoint.canon.stream.event;
  *
  * @author steve_siebert
  */
-public final class ChannelRolledBack {
+public final class StreamRolledBack {
 
     private final String channelName;
     private final String rollbackEventId;
     private final String justification;
 
-    public ChannelRolledBack(String channelName, String rollbackEventId,
+    public StreamRolledBack(String channelName, String rollbackEventId,
             String justification) {
         this.channelName = channelName;
         this.rollbackEventId = rollbackEventId;

@@ -15,7 +15,7 @@
  */
 package org.geoint.canon.codec;
 
-import org.geoint.canon.EventException;
+import org.geoint.canon.event.EventException;
 
 /**
  * Thrown if there is a problem encoding an event.
