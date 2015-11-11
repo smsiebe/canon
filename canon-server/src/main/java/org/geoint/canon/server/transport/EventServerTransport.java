@@ -13,35 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl.task;
+package org.geoint.canon.server.transport;
 
 /**
- * A task which has access to its contextual
+ * Creates a remotely accessible interface for the Canon instance.
  *
  * @author steve_siebert
  */
-public interface ContextualTask {
+public interface EventServerTransport {
 
     /**
-     * Task name.
+     * Synchronously start the transport.
      *
-     * @return the task name
+     * @throws Exception thrown if the transport cannot be started; transport
+     * must be in a non-started state
      */
-    String getName();
+    void start() throws Exception;
 
     /**
-     * Start the task.
+     * Synchronously stop the transport.
      *
-     * @param context execution context
-     * @throws Throwable
+     * @throws Exception thrown if the transport shutdown in a non-graceful
+     * manner; transport must be stopped
      */
-    void start(TaskContext context) throws Throwable;
-
-    /**
-     * Stop the task.
-     *
-     * @throws Throwable
-     */
-    void stop() throws Throwable;
+    void stop() throws Exception;
 
 }

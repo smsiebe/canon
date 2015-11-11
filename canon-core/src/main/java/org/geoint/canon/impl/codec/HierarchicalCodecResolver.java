@@ -49,7 +49,7 @@ public class HierarchicalCodecResolver {
      */
     public Optional<EventCodec> resolve(String eventType) {
         return Optional.ofNullable(tierCodecs.stream()
-                .filter((c) -> c.isSupported(eventType))
+                .filter((c) -> c.getSupportedEventType().contentEquals(eventType))
                 .findFirst()
                 .orElseGet(() -> (parentTier != null)
                                 ? parentTier.resolve(eventType).orElseGet(() -> null)

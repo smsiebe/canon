@@ -31,19 +31,6 @@ import java.util.function.Supplier;
  */
 public interface EventMessage {
 
-    /**
-     * Universally unique event id.
-     *
-     * @return committed unique id of the event message
-     */
-    String getId();
-
-    /**
-     * The event ID of the previous event in the sequence.
-     *
-     * @return previous event id in the sequence
-     */
-    String getPreviousEventId();
 
     /**
      * Event IDs that "triggered" (caused) this event.
@@ -53,13 +40,6 @@ public interface EventMessage {
     String[] getTriggerIds();
 
     /**
-     * ID of the event publisher.
-     *
-     * @return publisher id
-     */
-    String getPublisherId();
-
-    /**
      * ID of the entity which authorized the event to be published.
      *
      * @return authorizer id
@@ -67,11 +47,11 @@ public interface EventMessage {
     String getAuthorizerId();
 
     /**
-     * Name of the channel where this event is published/committed.
+     * Name of the stream where this event is published/committed.
      *
      * @return channel name
      */
-    String getChannelName();
+    String getStreamName();
 
     /**
      * Event type as defined by the application/domain.

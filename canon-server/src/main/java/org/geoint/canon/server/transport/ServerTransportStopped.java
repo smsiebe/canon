@@ -13,22 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl.task;
+package org.geoint.canon.server.transport;
 
 /**
- * Task which tasks a single parameter for execution,
- * 
+ *
  * @author steve_siebert
- * @param <T>
  */
-@FunctionalInterface
-public interface ConsumingTask<T> {
+public class ServerTransportStopped {
     
-    /**
-     * Execute the task.
-     * 
-     * @param obj
-     * @throws Throwable 
-     */
-    void execute(T obj) throws Throwable;
 }

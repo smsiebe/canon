@@ -15,6 +15,8 @@
  */
 package org.geoint.canon.stream;
 
+import java.io.Closeable;
+import java.io.Flushable;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.codec.EventCodec;
@@ -31,7 +33,8 @@ import org.geoint.canon.stream.reader.EventReader;
  * @author steve_siebert
  * @param <E> event message type
  */
-public interface EventStream<E extends EventMessage> extends EventAppender {
+public interface EventStream<E extends EventMessage>
+        extends Closeable, Flushable, AutoCloseable {
 
     /**
      * Channel-unique name of the stream.

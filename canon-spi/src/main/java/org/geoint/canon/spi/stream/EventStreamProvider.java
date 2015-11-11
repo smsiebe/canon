@@ -1,6 +1,5 @@
 package org.geoint.canon.spi.stream;
 
-import java.util.Optional;
 import org.geoint.canon.stream.EventStream;
 
 /**
@@ -15,10 +14,9 @@ public interface EventStreamProvider {
      * Indicates if this provider can create streams for the user-defined 
      * stream URI scheme.
      * 
-     * @param scheme stream uri scheme
-     * @return true if this provider supports this scheme, otherwise false
+     * @return URI scheme supported by this provider
      */
-    boolean supportsScheme (String scheme);
+    String getScheme();
     
     /**
      * Returns the requested event stream.

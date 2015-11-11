@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.impl.task;
+package org.geoint.canon.server.transport;
 
 /**
- * Executable task which may throw a checked exception.
  *
  * @author steve_siebert
  */
-@FunctionalInterface
-public interface Task {
-
-    void execute() throws Throwable;
+public class ServerTransportStarted {
+    
 }

@@ -33,7 +33,7 @@ public interface EventCodec<E> {
      *
      * @return true if this codec can encode/decode this event
      */
-    String getSupportedEventType ();
+    String getSupportedEventType();
 
     /**
      * Convert the domain event instance to event headers and encoded event
