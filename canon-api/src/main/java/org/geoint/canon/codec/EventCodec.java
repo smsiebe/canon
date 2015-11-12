@@ -36,29 +36,26 @@ public interface EventCodec<E> {
     String getSupportedEventType();
 
     /**
-     * Convert the domain event instance to event headers and encoded event
-     * content.
+     * Convert the domain event instance to encoded event content.
      *
      * @param event
-     * @param headers
      * @param out
      * @throws IOException thrown if there are problems writing to the stream
      * @throws EventCodecException thrown if there is a problem encoding the
      * domain event
      */
-    void encode(E event, Map<String, String> headers, OutputStream out)
+    void encode(E event, OutputStream out)
             throws IOException, EventCodecException;
 
     /**
      * Converts an EventMessage to a domain event.
      *
      * @param e event message
-     * @param headers map to add event headers
      * @return domain event instance
      * @throws IOException thrown if there are problems reading from the stream
      * @throws EventCodecException thrown if there is a problem decoding the
      * domain event
      */
-    E decode(EventMessage e, Map<String, String> headers)
+    E decode(EventMessage e)
             throws IOException, EventCodecException;
 }

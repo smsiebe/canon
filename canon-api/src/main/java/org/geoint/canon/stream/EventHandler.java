@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.stream.handler;
+package org.geoint.canon.stream;
 
-import org.geoint.canon.event.EventMessage;
-import org.geoint.canon.stream.event.StreamRolledBack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geoint.canon.event.CommittedEventMessage;
 
 /**
  * Event callback interface notified as events are appended to, or a relevant
@@ -24,29 +25,36 @@ import org.geoint.canon.stream.event.StreamRolledBack;
  * registered.
  * <p>
  * The EventHandler is the most basic of the callbacks and potentially be be
- * notified of significant number of events including domain and
- * channel/administrative. Applications are encouraged to make use of specific
- * handler interfaces, such as the the {@link TypeEventObserver} or
- * {@link StreamSanitizer} to limit the amount of logic contained in each
- * handler.
+ * notified of significant number of events.
  *
  * @author steve_siebert
- * @param <E>
  */
-public interface EventHandler<E extends EventMessage> {
+@FunctionalInterface
+public interface EventHandler {
+
+    static final Logger LOGGER
+            = Logger.getLogger(EventHandler.class.getName());
 
     /**
      * Next sequential event on the stream.
      *
      * @param event next event to handle
+     * @throws Exception thrown if there is a problem processing the event
      */
-    void handle(E event);
+    void handle(CommittedEventMessage event) throws Exception;
 
     /**
-     * Called when a stream/channel must be rolled back to the specified
-     * position.
+     * Called when the handler is unable to process an event.
      *
-     * @param event sanitized event details.
+     * @param event
+     * @param ex
+     * @return
      */
-    void rollback(StreamRolledBack event);
+    default EventHandlerAction onFailure(CommittedEventMessage event,
+            Exception ex) {
+        LOGGER.log(Level.WARNING,
+                String.format("Unable to handle event %s, skipping.",
+                        event.getId()), ex);
+        return EventHandlerAction.CONTINUE;
+    }
 }

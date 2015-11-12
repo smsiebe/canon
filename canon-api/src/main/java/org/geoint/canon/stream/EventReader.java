@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.stream.reader;
+package org.geoint.canon.stream;
 
 import java.io.Closeable;
-import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamReadException;
@@ -25,10 +25,8 @@ import org.geoint.canon.stream.StreamReadException;
  * Sequential event reader.
  *
  * @author steve_siebert
- * @param <E>
  */
-public interface EventReader<E extends EventMessage>
-        extends Closeable, AutoCloseable {
+public interface EventReader extends Closeable, AutoCloseable {
 
     /**
      * Checks if there is a sequential event available after the readers current
@@ -46,7 +44,7 @@ public interface EventReader<E extends EventMessage>
      * @throws StreamReadException thrown if there is a problem reading events
      * from the event stream
      */
-    E next() throws StreamReadException;
+    CommittedEventMessage next() throws StreamReadException;
 
     /**
      * Set the readers in the event sequence position by event Id.
@@ -56,10 +54,10 @@ public interface EventReader<E extends EventMessage>
      * known to the underlying channel
      */
     void setPositionByEventId(String eventId) throws UnknownEventException;
-    
+
     /**
      * Return the source stream.
-     * 
+     *
      * @return source event stream
      */
     EventStream getStream();

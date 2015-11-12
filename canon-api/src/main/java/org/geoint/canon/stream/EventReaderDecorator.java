@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.stream.reader;
+package org.geoint.canon.stream;
 
 import java.io.IOException;
-import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
-import org.geoint.canon.stream.EventStream;
-import org.geoint.canon.stream.StreamReadException;
 
 /**
  * Decorates an EventReader.
  *
  * @author steve_siebert
- * @param <E>
  */
-public abstract class EventReaderDecorator<E extends EventMessage>
-        implements EventReader<E> {
+public abstract class EventReaderDecorator implements EventReader {
 
-    protected final EventReader<E> reader;
+    protected final EventReader reader;
     protected String currentEventId;
 
-    public EventReaderDecorator(EventReader<E> reader)
+    public EventReaderDecorator(EventReader reader)
             throws StreamReadException {
         this.reader = reader;
     }
@@ -55,7 +51,7 @@ public abstract class EventReaderDecorator<E extends EventMessage>
      * @throws StreamReadException
      */
     @Override
-    public E next() throws StreamReadException {
+    public CommittedEventMessage next() throws StreamReadException {
         return reader.next();
     }
 

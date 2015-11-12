@@ -15,45 +15,72 @@
  */
 package org.geoint.canon.stream.event;
 
+import java.util.Objects;
+
 /**
- * Published to the channel administrative stream when the channel must be
- * rolled back to a specified event.
- * <p>
- * This event will cause canon to rollback the channel, and all streams, to the
- * specified point. Downstream systems will receive this event any time an event
- * is requested past this point.
+ * Event detailing a stream has become invalid and must be rolled back to a
+ * specific point.
  *
  * @author steve_siebert
  */
 public final class StreamRolledBack {
 
-    private final String channelName;
-    private final String rollbackEventId;
+    private final String streamName;
+    private final String lastEventId;
     private final String justification;
 
-    public StreamRolledBack(String channelName, String rollbackEventId,
+    public StreamRolledBack(String streamName, String lastEventId,
             String justification) {
-        this.channelName = channelName;
-        this.rollbackEventId = rollbackEventId;
+        this.streamName = streamName;
+        this.lastEventId = lastEventId;
         this.justification = justification;
+    }
+
+    public String getStreamName() {
+        return streamName;
+    }
+
+    public String getLastEventId() {
+        return lastEventId;
     }
 
     public String getJustification() {
         return justification;
     }
 
-    public String getRollbackEventId() {
-        return rollbackEventId;
-    }
-
-    public String getChannelName() {
-        return channelName;
+    @Override
+    public String toString() {
+        return String.format("Event stream '%s' was rolled back to event '%s'.",
+                streamName, lastEventId);
     }
 
     @Override
-    public String toString() {
-        return String.format("Event channel '%s' was rolled back to event '%s'.",
-                channelName, rollbackEventId);
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + Objects.hashCode(this.streamName);
+        hash = 89 * hash + Objects.hashCode(this.lastEventId);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final StreamRolledBack other = (StreamRolledBack) obj;
+        if (!Objects.equals(this.streamName, other.streamName)) {
+            return false;
+        }
+        if (!Objects.equals(this.lastEventId, other.lastEventId)) {
+            return false;
+        }
+        return true;
     }
 
 }

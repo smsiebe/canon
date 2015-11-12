@@ -18,22 +18,16 @@ package org.geoint.canon.stream.event;
 import java.util.Objects;
 
 /**
- * Event published when a new stream is created one a channel.
+ * Event published when a new stream is created.
  *
  * @author steve_siebert
  */
 public class StreamCreated {
 
-    private final String channelName;
     private final String streamName;
 
-    public StreamCreated(String channelName, String streamName) {
-        this.channelName = channelName;
+    public StreamCreated(String streamName) {
         this.streamName = streamName;
-    }
-
-    public String getChannelName() {
-        return channelName;
     }
 
     public String getStreamName() {
@@ -42,13 +36,12 @@ public class StreamCreated {
 
     @Override
     public String toString() {
-        return String.format("Stream created: %s:%s", channelName, streamName);
+        return String.format("Stream '%s' created.", streamName);
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.channelName);
         hash = 37 * hash + Objects.hashCode(this.streamName);
         return hash;
     }
@@ -62,13 +55,7 @@ public class StreamCreated {
             return false;
         }
         final StreamCreated other = (StreamCreated) obj;
-        if (!Objects.equals(this.channelName, other.channelName)) {
-            return false;
-        }
-        if (!Objects.equals(this.streamName, other.streamName)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.streamName, other.streamName);
     }
 
 }

@@ -17,8 +17,6 @@ package org.geoint.canon.tx;
 
 import java.util.concurrent.Future;
 import org.geoint.canon.stream.AppendOutOfSequenceException;
-import org.geoint.canon.stream.EventAppender;
-import org.geoint.canon.stream.StreamAppendException;
 
 /**
  * ACID compliant transaction used to commit multiple events in a single commit.
@@ -28,14 +26,30 @@ import org.geoint.canon.stream.StreamAppendException;
  *
  * @author Steve Siebert <steve@t-3-solutions.com>
  */
-public interface EventTransaction extends EventAppender {
+public interface EventTransaction {
+
+    /**
+     * Return the unique transaction id.
+     *
+     * @return transaction id
+     */
+    String getId();
+
+    /**
+     * Determine if the transaction is active.
+     *
+     * @return true if the transaction is active, otherwise false
+     */
+    boolean isActive();
 
     /**
      * Cancels the transaction, rolling back any changes that may have taken
      * place.
      *
+     * @throws EventTransactionException thrown if there was a problem appending
+     * events to the stream
      */
-    void rollback();
+    void rollback() throws EventTransactionException;
 
     /**
      * Commits all the events included in this transaction to the end of the
@@ -46,10 +60,10 @@ public interface EventTransaction extends EventAppender {
      * transaction failed no events in the transaction will be published.
      *
      * @return future commit results
-     * @throws StreamAppendException thrown if there was a problem appending
+     * @throws EventTransactionException thrown if there was a problem appending
      * events to the stream
      */
-    Future<TransactionCommitted> commit() throws StreamAppendException;
+    Future<TransactionCommitted> commit() throws EventTransactionException;
 
     /**
      * Commits all the events included in this transaction after the specified
@@ -58,12 +72,12 @@ public interface EventTransaction extends EventAppender {
      *
      * @param previousEventId
      * @return commit results
-     * @throws StreamAppendException thrown if there was a problem appending
+     * @throws EventTransactionException thrown if there was a problem appending
      * events to the stream
      * @throws AppendOutOfSequenceException thrown if the transaction could not
      * be appended because the previous event id is not the last event id of the
      * stream
      */
     Future<TransactionCommitted> commit(String previousEventId)
-            throws StreamAppendException, AppendOutOfSequenceException;
+            throws EventTransactionException, AppendOutOfSequenceException;
 }

@@ -17,12 +17,10 @@ package org.geoint.canon.stream;
 
 import java.io.Closeable;
 import java.io.Flushable;
+import java.util.function.Predicate;
 import org.geoint.canon.event.EventMessage;
-import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.tx.EventTransaction;
-import org.geoint.canon.stream.handler.EventHandler;
-import org.geoint.canon.stream.reader.EventReader;
+import org.geoint.canon.event.CommittedEventMessage;
 
 /**
  * A readable view of sequential events on an {@link EventChannel}.
@@ -46,11 +44,18 @@ public interface EventStream<E extends EventMessage>
     String getName();
 
     /**
+     * Returns the last event id associated with the stream.
+     *
+     * @return the last event id associated with the stream
+     */
+    String getLastEventId();
+
+    /**
      * Returns a new event reader for the stream.
      *
      * @return new event reader
      */
-    EventReader<E> getReader();
+    EventReader getReader();
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -58,66 +63,63 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      */
-    void addHandler(EventHandler<E> handler);
+    void addHandler(EventHandler handler);
+
+    /**
+     * Registers an event handler which will be called for each event on the
+     * stream that passes the provided filters test.
+     *
+     * @param handler
+     * @param filter
+     */
+    void addHandler(EventHandler handler, Predicate<CommittedEventMessage> filter);
 
     /**
      * Registers an event handler which will be called for each event on the
      * stream, starting at the specified event.
      *
      * @param handler
-     * @param eventId
+     * @param lastEventId
      */
-    void addHandlerAtEventId(EventHandler<E> handler, String eventId);
+    void addHandler(EventHandler handler, String lastEventId);
+
+    /**
+     * Registers an event handler which will be called for each event on the
+     * stream, starting at the specified event.
+     *
+     * @param handler
+     * @param filter
+     * @param lastEventId
+     */
+    void addHandler(EventHandler handler, Predicate<CommittedEventMessage> filter,
+            String lastEventId);
 
     /**
      * Removes the handler from the stream.
      *
      * @param handler
      */
-    void removeHandler(EventHandler<E> handler);
+    void removeHandler(EventHandler handler);
 
     /**
-     * Creates a new event transaction which may be used to append multiple
-     * events to the stream in a single ACID compliant transaction.
+     * Create a new transactional EventAppender which will append all events
+     * added to the tail of the stream.
      *
-     * @return new append transaction
+     * @return transactional event appender
      */
-    EventTransaction newTransaction();
+    EventAppender appendToEnd();
 
     /**
-     * Create and append a new event message to the tail of the event stream.
+     * Create a new transaction EventAppender which will attempt to append
+     * events after the specified event.
+     * <p>
+     * If the stream has advanced past the specified event id on commit the
+     * transaction will fail.
      *
-     * @param eventType
-     * @return builder used to create the event message
-     * @throws StreamAppendException thrown if there was a problem appending
-     * events to the stream
-     */
-    @Override
-    EventMessageBuilder newMessage(String eventType)
-            throws StreamAppendException;
-
-    /**
-     * Create and append a new event message after the specified event in the
-     * stream.
-     *
-     * @param eventType
      * @param previousEventId
-     * @return
-     * @throws StreamAppendException thrown if there was a problem appending
-     * events to the stream
-     * @throws AppendOutOfSequenceException thrown if the transaction could not
-     * be appended because the previous event id is not the last event id of the
-     * stream
+     * @return transactional event appender
      */
-    EventMessageBuilder newMessage(String eventType, String previousEventId)
-            throws StreamAppendException, AppendOutOfSequenceException;
-
-    /**
-     * Returns the last event id associated with the stream.
-     *
-     * @return the last event id associated with the stream
-     */
-    String getLastEventId();
+    EventAppender appendAfter(String previousEventId);
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.

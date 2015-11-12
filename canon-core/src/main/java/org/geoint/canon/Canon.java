@@ -22,7 +22,7 @@ import org.geoint.canon.spi.reconciliation.EventMediator;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamAlreadyExistsException;
 import org.geoint.canon.stream.StreamReadException;
-import org.geoint.canon.stream.handler.EventHandler;
+import org.geoint.canon.stream.EventHandler;
 
 /**
  * A Canon event database instance.

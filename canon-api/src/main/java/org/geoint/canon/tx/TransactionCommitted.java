@@ -20,30 +20,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
 
 /**
- * Event published upon successful transaction commit.
+ * Event created upon successful transaction commit.
  *
  * @author steve_siebert
  */
 public final class TransactionCommitted {
 
-    private final String channelId;
+    private final String streamName;
     private final String transactionId;
     private final ZonedDateTime commitTime;
-    private final Collection<EventMessage> messages;
+    private final Collection<CommittedEventMessage> messages;
 
-    public TransactionCommitted(String channelId, String transactionId,
-            ZonedDateTime commitTime, EventMessage... messages) {
-        this.channelId = channelId;
+    public TransactionCommitted(String streamName, String transactionId,
+            ZonedDateTime commitTime, CommittedEventMessage... messages) {
+        this.streamName = streamName;
         this.transactionId = transactionId;
         this.commitTime = commitTime;
         this.messages = Arrays.asList(messages);
     }
 
-    public String getChannelId() {
-        return channelId;
+    public String getStreamName() {
+        return streamName;
     }
 
     public String getTransactionId() {
@@ -54,22 +55,22 @@ public final class TransactionCommitted {
         return commitTime;
     }
 
-    public Collection<EventMessage> getMessages() {
+    public Collection<CommittedEventMessage> getMessages() {
         return messages;
     }
 
     @Override
     public String toString() {
         return String.format("Transaction '%s' was successfully committed at "
-                + "%s on channel '%s'", transactionId,
+                + "%s on stream '%s'", transactionId,
                 commitTime.format(DateTimeFormatter.ISO_DATE_TIME),
-                channelId);
+                streamName);
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.channelId);
+        hash = 29 * hash + Objects.hashCode(this.streamName);
         hash = 29 * hash + Objects.hashCode(this.transactionId);
         return hash;
     }
@@ -83,13 +84,10 @@ public final class TransactionCommitted {
             return false;
         }
         final TransactionCommitted other = (TransactionCommitted) obj;
-        if (!Objects.equals(this.channelId, other.channelId)) {
+        if (!Objects.equals(this.streamName, other.streamName)) {
             return false;
         }
-        if (!Objects.equals(this.transactionId, other.transactionId)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.transactionId, other.transactionId);
     }
 
 }

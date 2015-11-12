@@ -64,9 +64,8 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event
-     * @return
      */
-    EventMessageBuilder event(InputStream event);
+    void event(InputStream event);
 
     /**
      * Terminating method providing the event message payload.
@@ -79,7 +78,6 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event
-     * @return
      */
     void event(Object event);
 

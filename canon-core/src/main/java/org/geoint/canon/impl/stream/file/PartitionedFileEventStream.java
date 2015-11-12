@@ -6,8 +6,8 @@ import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.stream.LocalEventStream;
 import org.geoint.canon.stream.AppendOutOfSequenceException;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.stream.handler.EventHandler;
-import org.geoint.canon.stream.reader.EventReader;
+import org.geoint.canon.stream.EventHandler;
+import org.geoint.canon.stream.EventReader;
 import org.geoint.canon.tx.EventTransaction;
 
 /**
