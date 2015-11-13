@@ -7,20 +7,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.stream.LocalEventStream;
 import org.geoint.canon.impl.stream.file.PartitionedFileEventStream;
-import org.geoint.canon.stream.AppendOutOfSequenceException;
+import org.geoint.canon.spi.stream.EventStreamProvider;
+import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
-import org.geoint.canon.stream.StreamAppendException;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventReader;
-import org.geoint.canon.tx.EventTransaction;
 
 /**
+ * Managed event stream which adds functional and convenience capabilities to
+ * {@link EventStreamProvider provider} created streams.
  *
  * @author steve_siebert
  */
@@ -96,7 +97,6 @@ public class ManagedEventStream implements EventStream {
         }
     }
 
-
     @Override
     public String getName() {
         return providerStream.getName();
@@ -109,11 +109,21 @@ public class ManagedEventStream implements EventStream {
 
     @Override
     public void addHandler(EventHandler handler) {
-        
+
     }
 
     @Override
-    public void addHandlerAtEventId(EventHandler handler, String eventId) {
+    public void addHandler(EventHandler handler, Predicate filter) {
+
+    }
+
+    @Override
+    public void addHandler(EventHandler handler, String lastEventId) {
+
+    }
+
+    @Override
+    public void addHandler(EventHandler handler, Predicate filter, String lastEventId) {
 
     }
 
@@ -123,17 +133,12 @@ public class ManagedEventStream implements EventStream {
     }
 
     @Override
-    public EventTransaction newTransaction() {
+    public EventAppender appendToEnd() {
 
     }
 
     @Override
-    public EventMessageBuilder newMessage(String eventType) throws StreamAppendException {
-
-    }
-
-    @Override
-    public EventMessageBuilder newMessage(String eventType, String previousEventId) throws StreamAppendException, AppendOutOfSequenceException {
+    public EventAppender appendAfter(String previousEventId) {
 
     }
 
@@ -149,14 +154,14 @@ public class ManagedEventStream implements EventStream {
 
     @Override
     public void close() throws IOException {
-        
+
     }
 
     @Override
     public void flush() throws IOException {
 
     }
-    
+
     private void recursiveDeleteDirectory(File directory) throws IOException {
         Files.walkFileTree(directory.toPath(), new SimpleFileVisitor<Path>() {
             @Override

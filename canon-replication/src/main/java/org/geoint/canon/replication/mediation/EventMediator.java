@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.spi.reconciliation;
+package org.geoint.canon.replication.mediation;
+
+import org.geoint.canon.replication.CollisionResolution;
+import org.geoint.canon.replication.EventCollision;
 
 /**
  * Mediators are used by {@link EventArbitor the arbitor} to automatically

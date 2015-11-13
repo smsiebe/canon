@@ -13,32 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.spi.reconciliation;
+package org.geoint.canon.replication;
 
 import java.util.Objects;
+import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
 
 /**
- * Published when two events have been deemed a collision and must be
+ * Published when two committed events have been deemed a collision and must be
  * reconciled.
  *
  * @author steve_siebert
  */
 public final class EventCollision {
 
-    private final String channelName;
-    private final EventMessage first;
-    private final EventMessage second;
+    private final String streamName;
+    private final CommittedEventMessage first;
+    private final CommittedEventMessage second;
 
-    public EventCollision(String channelName, EventMessage first,
-            EventMessage second) {
-        this.channelName = channelName;
+    public EventCollision(String streamName, CommittedEventMessage first,
+            CommittedEventMessage second) {
+        this.streamName = streamName;
         this.first = first;
         this.second = second;
     }
 
-    public String getChannelName() {
-        return channelName;
+    public String getStreamName() {
+        return streamName;
     }
 
     public EventMessage getFirst() {
@@ -51,15 +52,15 @@ public final class EventCollision {
 
     @Override
     public String toString() {
-        return String.format("Event collision on channel '%s' between "
+        return String.format("Event collision on stream '%s' between "
                 + "events '%s' and '%s'",
-                channelName, first.getId(), second.getId());
+                streamName, first.getId(), second.getId());
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 61 * hash + Objects.hashCode(this.channelName);
+        hash = 61 * hash + Objects.hashCode(this.streamName);
         hash = 61 * hash + Objects.hashCode(this.first);
         hash = 61 * hash + Objects.hashCode(this.second);
         return hash;
@@ -74,7 +75,7 @@ public final class EventCollision {
             return false;
         }
         final EventCollision other = (EventCollision) obj;
-        if (!Objects.equals(this.channelName, other.channelName)) {
+        if (!Objects.equals(this.streamName, other.streamName)) {
             return false;
         }
         if (!Objects.equals(this.first, other.first)) {

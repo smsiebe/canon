@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.spi.reconciliation;
+package org.geoint.canon.replication;
+
+import org.geoint.canon.replication.reconcile.ReconciliationState;
 
 /**
  * An event collision that is pending reconciliation and may be resolved.

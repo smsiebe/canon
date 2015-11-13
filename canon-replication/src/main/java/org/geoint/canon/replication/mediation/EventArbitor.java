@@ -13,11 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.spi.reconciliation;
+package org.geoint.canon.replication.mediation;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
+import org.geoint.canon.replication.ArbitrableCollision;
+import org.geoint.canon.replication.ArbitrableCollision;
+import org.geoint.canon.replication.CollisionResolution;
+import org.geoint.canon.replication.CollisionResolution;
+import org.geoint.canon.replication.EventCollision;
+import org.geoint.canon.replication.EventCollision;
+import org.geoint.canon.replication.mediation.EventMediator;
 
 /**
  * Event reconciliation interface providing automated and manual means to

@@ -18,7 +18,7 @@ package org.geoint.canon;
 import java.util.Collection;
 import java.util.Map;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.spi.reconciliation.EventMediator;
+import org.geoint.canon.replication.EventMediator;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamAlreadyExistsException;
 import org.geoint.canon.stream.StreamReadException;
