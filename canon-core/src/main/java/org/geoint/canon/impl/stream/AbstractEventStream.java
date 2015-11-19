@@ -1,4 +1,4 @@
-package org.geoint.canon;
+package org.geoint.canon.impl.stream;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,44 +11,42 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.impl.stream.LocalEventStream;
 import org.geoint.canon.impl.stream.file.PartitionedFileEventStream;
-import org.geoint.canon.spi.stream.EventStreamProvider;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventReader;
 
 /**
- * Managed event stream which adds functional and convenience capabilities to
- * {@link EventStreamProvider provider} created streams.
+ * Implements common event stream methods requiring event stream implementations
+ * extending from this class to implement only a subset of methods.
  *
  * @author steve_siebert
  */
-public class ManagedEventStream implements EventStream {
+public class AbstractEventStream implements EventStream {
 
-    private final EventStream providerStream;
-    private File offlineDir;
-    private LocalEventStream offlineStream;
+    private final String streamName;
+    private EventStream offlineStream;
 
     private static final Logger LOGGER
-            = Logger.getLogger(ManagedEventStream.class.getName());
+            = Logger.getLogger(AbstractEventStream.class.getName());
 
-    public ManagedEventStream(EventStream providerStream) {
-        this.providerStream = providerStream;
+    public AbstractEventStream(String streamName) {
+        this.streamName = streamName;
     }
 
-    public ManagedEventStream(EventStream providerStream, File offlineDir) {
-        this.providerStream = providerStream;
-        this.offlineDir = offlineDir;
+    public AbstractEventStream(String streamName, EventStream offlineStream) {
+        this.streamName = streamName;
+        this.offlineStream = offlineStream;
     }
 
+    @Override
     public boolean isOfflineable() {
-        return !(providerStream instanceof LocalEventStream)
-                && offlineStream == null;
+        return offlineStream != null;
     }
 
-    public void setOfflineDir(File offlineDir) {
+    @Override
+    public void setOffline(boolean offline) {
         if (!isOfflineable()) {
             this.offlineDir = offlineDir;
             offlineStream = new PartitionedFileEventStream(providerStream.getName(),
@@ -56,6 +54,7 @@ public class ManagedEventStream implements EventStream {
         }
     }
 
+    @Override
     public void deleteOfflineCopy() {
         if (offlineStream == null) {
             LOGGER.log(Level.FINE, String.format("Offline copy of stream '%s' "

@@ -41,6 +41,10 @@ public class HierarchicalCodecResolver {
         this.tierCodecs = Arrays.asList(tierCodecs);
     }
 
+    public void add(EventCodec codec) {
+        tierCodecs.add(codec);
+    }
+
     /**
      * Resolve the codec from the current tier or parent tier.
      *
@@ -52,8 +56,8 @@ public class HierarchicalCodecResolver {
                 .filter((c) -> c.getSupportedEventType().contentEquals(eventType))
                 .findFirst()
                 .orElseGet(() -> (parentTier != null)
-                                ? parentTier.resolve(eventType).orElseGet(() -> null)
-                                : null
+                        ? parentTier.resolve(eventType).orElseGet(() -> null)
+                        : null
                 )
         );
     }

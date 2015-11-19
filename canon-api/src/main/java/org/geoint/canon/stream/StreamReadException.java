@@ -16,7 +16,6 @@
 package org.geoint.canon.stream;
 
 import org.geoint.canon.event.EventException;
-import org.geoint.canon.event.EventException;
 
 /**
  * Thrown if there is a problem reading from an event stream.

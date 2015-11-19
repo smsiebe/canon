@@ -16,6 +16,7 @@
 package org.geoint.canon.stream;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.Flushable;
 import java.util.function.Predicate;
 import org.geoint.canon.event.EventMessage;
@@ -130,5 +131,20 @@ public interface EventStream<E extends EventMessage>
      * @param codec
      */
     void useCodec(EventCodec<?> codec);
+
+    /**
+     * Determine if this stream implementation is offline capable.
+     *
+     * @return true if offline capable, otherwise false
+     */
+    boolean isOfflineable();
+
+    /**
+     * 
+     *
+     * @param offline if true makes offline capable, if false remove offline
+     * capability if not intrinsic
+     */
+    void setOffline(boolean offline);
 
 }

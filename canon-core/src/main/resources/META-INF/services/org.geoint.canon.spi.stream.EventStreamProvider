@@ -1,0 +1,3 @@
+org.geoint.canon.impl.stream.memory.MemoryStreamProvider
+org.geoint.canon.impl.stream.file.FileStreamProvider
+org.geoint.canon.impl.stream.rest.RestStreamProvider
