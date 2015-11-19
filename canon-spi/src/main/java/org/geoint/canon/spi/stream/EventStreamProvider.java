@@ -1,6 +1,7 @@
 package org.geoint.canon.spi.stream;
 
 import java.util.Map;
+import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.stream.EventStream;
 
 /**
@@ -24,11 +25,14 @@ public interface EventStreamProvider {
      *
      * @param streamName name of the stream to create
      * @param streamProperties properties of the event stream
+     * @param codecs codecs available to the stream
      * @return event stream
      * @throws UnableToResolveStreamException thrown if the provider could not
      * resolve the stream as requested
      */
-    EventStream getStream(String streamName, Map<String, String> streamProperties)
+    EventStream getStream(String streamName,
+            Map<String, String> streamProperties,
+            CodecResolver codecs)
             throws UnableToResolveStreamException;
 
 }

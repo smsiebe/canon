@@ -10,4 +10,6 @@ import org.geoint.canon.spi.stream.EventStreamProvider;
 public class FileStreamProvider implements EventStreamProvider{
     
     public static final String SCHEME = "FILE";
+    public static final String PROPERTY_STREAM_BASEDIR = "baseDir";
+    
 }

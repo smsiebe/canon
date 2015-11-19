@@ -18,6 +18,7 @@ package org.geoint.canon.impl.codec;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 
 /**
@@ -25,12 +26,12 @@ import org.geoint.canon.codec.EventCodec;
  *
  * @author steve_siebert
  */
-public class HierarchicalCodecResolver {
+public class HierarchicalCodecResolver implements CodecResolver {
 
-    private final HierarchicalCodecResolver parentTier;
+    private final CodecResolver parentTier;
     private final Collection<EventCodec> tierCodecs;
 
-    public HierarchicalCodecResolver(HierarchicalCodecResolver parent,
+    public HierarchicalCodecResolver(CodecResolver parent,
             EventCodec... tierCodecs) {
         this.parentTier = parent;
         this.tierCodecs = Arrays.asList(tierCodecs);
@@ -51,6 +52,7 @@ public class HierarchicalCodecResolver {
      * @param eventType
      * @return resolved codec or null
      */
+    @Override
     public Optional<EventCodec> resolve(String eventType) {
         return Optional.ofNullable(tierCodecs.stream()
                 .filter((c) -> c.getSupportedEventType().contentEquals(eventType))

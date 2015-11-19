@@ -10,7 +10,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
+import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.stream.file.PartitionedFileEventStream;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
@@ -26,17 +28,20 @@ import org.geoint.canon.stream.EventReader;
 public class AbstractEventStream implements EventStream {
 
     private final String streamName;
+    private final HierarchicalCodecResolver streamCodecs;
     private EventStream offlineStream;
 
     private static final Logger LOGGER
             = Logger.getLogger(AbstractEventStream.class.getName());
 
-    public AbstractEventStream(String streamName) {
-        this.streamName = streamName;
+    public AbstractEventStream(String streamName, CodecResolver codecs) {
+        this(streamName, codecs, null);
     }
 
-    public AbstractEventStream(String streamName, EventStream offlineStream) {
+    public AbstractEventStream(String streamName, CodecResolver codecs,
+            EventStream offlineStream) {
         this.streamName = streamName;
+        this.streamCodecs = new HierarchicalCodecResolver(codecs);
         this.offlineStream = offlineStream;
     }
 
