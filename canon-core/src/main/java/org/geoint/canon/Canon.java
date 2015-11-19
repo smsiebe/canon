@@ -16,7 +16,13 @@
 package org.geoint.canon;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,12 +76,48 @@ public class Canon {
         this.streamMgr = streamMgr;
     }
 
-    public static Canon persistentInstance(File baseDir) {
+    /**
+     * Create a canon instance with persistent settings.
+     *
+     * @param baseDir base directory for the canon instance
+     * @return persistent canon instance
+     */
+    public static Canon persistentInstance(File baseDir) throws IOException{
+        final String instanceId;
+        
+        if (!baseDir.exists()) {
+            baseDir.mkdirs();
+        } else {
+            //load canon instance configuration
+            final File instanceIdFile = new File(baseDir, "instanceId");
+            if (!instanceIdFile.exists()) {
+                instanceId = UUID.randomUUID().toString();
+                try (OutputStream out = new FileOutputStream(instanceIdFile)) {
+                    out.write(instanceId.getBytes(StandardCharsets.UTF_8));
+                } catch (IOException ex) {
+                    throw new IOException("Unable to persist canon "
+                            + "configuration", ex);
+                }
+            } else {
+                try (InputStream in = new FileInputStream(instanceIdFile)) {
+                    byte[] buffer = new byte[36];
+                    int read = 0;
+                    while ((read = in.read(buffer)) != -1) {
+                        
+                    }
+                }
+            }
+        }
         HierarchicalCodecResolver codecs = new HierarchicalCodecResolver();
-        FileStreamManager mgr = FileStreamManager.fromBase(codecs, baseDir);
-        return new Canon(mgr.getInstanceId(), codecs, mgr);
+        FileStreamManager mgr = FileStreamManager.fromBase(codecs, new File(baseDir, "streams"));
+        return new Canon(, codecs, mgr);
     }
 
+    /**
+     * Create a canon instance with transient settings.
+     *
+     * @return transient canon instance
+     */
     public static Canon transientInstance() {
         HierarchicalCodecResolver codecs = new HierarchicalCodecResolver();
         return new Canon(UUID.randomUUID().toString(), codecs,
@@ -122,7 +164,7 @@ public class Canon {
     }
 
     /**
-     * Returns the named event stream, creating a local event stream with
+     * Returns the named event stream, creating a default event stream with
      * default stream properties if it is not registered with the instance.
      *
      * @param streamName stream name
@@ -186,27 +228,25 @@ public class Canon {
             throw new StreamAlreadyExistsException(streamName);
         }
 
-        return streamMgr.getOrCreateStream(streamName, () -> {
+        //reload providers if the scheme is not available
+        if (!streamProviders.containsKey(scheme)) {
+            reloadStreamProviders();
+        }
 
-            //reload providers if the scheme is not available
-            if (!streamProviders.containsKey(scheme)) {
-                reloadStreamProviders();
-            }
+        if (!streamProviders.containsKey(scheme)) {
+            //scheme is still not available after provider reload
+            final String error = String.format("Unable to resolve stream "
+                    + "'%s' with provider scheme '%s', no provider found.",
+                    streamName, scheme);
+            LOGGER.warning(error);
+            throw new UnableToResolveStreamException(error);
+        }
 
-            if (!streamProviders.containsKey(scheme)) {
-                //scheme is still not available after provider reload
-                final String error = String.format("Unable to resolve stream "
-                        + "'%s' with provider scheme '%s', no provider found.",
-                        streamName, scheme);
-                LOGGER.warning(error);
-                throw new UnableToResolveStreamException(error);
-            }
-
-            //provider is available, attempt to load stream
-            return streamProviders.get(scheme)
-                    .getStream(streamName, streamProperties);
-        });
-
+        //provider is available, attempt to load stream
+        EventStream stream = streamProviders.get(scheme)
+                .getStream(streamName, streamProperties);
+        streamMgr.registerStream(stream);
+        return stream;
     }
 
     /**

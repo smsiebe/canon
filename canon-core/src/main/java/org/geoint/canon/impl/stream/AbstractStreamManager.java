@@ -35,20 +35,9 @@ public abstract class AbstractStreamManager {
                 return streams.get(streamName);
             }
 
-            //stream not registered, create
+            //stream not registered, create a default stream by this name
             return createStream(streamName, Collections.EMPTY_MAP);
         }
-    }
-
-    public EventStream getOrCreateStream(String streamName,
-            StreamCreator creator)
-            throws UnableToResolveStreamException {
-        synchronized (streams) {
-            if (!streams.containsKey(streamName)) {
-                streams.put(streamName, creator.create());
-            }
-        }
-        return streams.get(streamName);
     }
 
     /**

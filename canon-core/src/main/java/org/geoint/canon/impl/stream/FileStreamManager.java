@@ -45,10 +45,6 @@ public class FileStreamManager extends AbstractStreamManager {
 
     }
 
-    public String getInstanceId() {
-
-    }
-
     @Override
     public EventStream createStream(String streamName,
             Map<String, String> streamProperties) {
