@@ -15,22 +15,28 @@
  */
 package org.geoint.canon;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
-import org.geoint.canon.impl.stream.FileStreamManager;
-import org.geoint.canon.impl.stream.MemoryStreamManager;
-import org.geoint.canon.impl.stream.AbstractStreamManager;
 import org.geoint.canon.impl.stream.StreamProviderManager;
+import org.geoint.canon.impl.stream.file.FileStreamProvider;
+import org.geoint.canon.impl.stream.memory.MemoryStreamProvider;
 import org.geoint.canon.spi.stream.EventStreamProvider;
 import org.geoint.canon.spi.stream.UnableToResolveStreamException;
 import org.geoint.canon.stream.EventHandler;
@@ -44,17 +50,27 @@ import org.geoint.canon.stream.StreamAlreadyExistsException;
  */
 public class Canon {
 
-    private final AbstractStreamManager streamMgr;
+    private final File baseDir;
     private final HierarchicalCodecResolver codecs;
-    private final String INSTANCE_ADMIN_STREAM_NAME = "canon.admin";
+    private final Map<String, EventStream> streams = new HashMap<>();
+    private final EventStreamProvider defaultProvider;
     private final StreamProviderManager streamProviders
             = StreamProviderManager.getDefaultInstance();
+    private static Map<String, String> DEFAULT_STREAM_PROPERTIES;
+
+    private static final String INSTANCE_ADMIN_STREAM_NAME = "canon.admin";
+    private static final String CANON_BASE_DIR_PROPERTY = "canonBaseDir";
 
     private static final Logger LOGGER = Logger.getLogger(Canon.class.getName());
 
-    private Canon(AbstractStreamManager streamMgr) {
+    private Canon(File baseDir, EventStreamProvider defaultProvider) {
         this.codecs = new HierarchicalCodecResolver();
-        this.streamMgr = streamMgr;
+        this.baseDir = baseDir;
+        this.defaultProvider = defaultProvider;
+
+        DEFAULT_STREAM_PROPERTIES = new HashMap<>(1);
+        DEFAULT_STREAM_PROPERTIES.put(CANON_BASE_DIR_PROPERTY,
+                baseDir.getAbsolutePath());
     }
 
     /**
@@ -72,9 +88,36 @@ public class Canon {
             baseDir.mkdirs();
         }
 
-        HierarchicalCodecResolver codecs = new HierarchicalCodecResolver();
-        FileStreamManager mgr = FileStreamManager.fromBase(codecs, new File(baseDir, "streams"));
-        return new Canon(codecs, mgr);
+        Canon canon = new Canon(baseDir, new FileStreamProvider());
+
+        //discover any existing streams
+        Arrays.stream(baseDir.listFiles())
+                .filter(File::isDirectory)
+                .map((f) -> new File(f, f.getName() + ".uri")) //stream config as uri
+                .filter(File::exists)
+                .map((f) -> { //read URI string from file, or return null
+                    try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
+                        return reader.readLine();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.SEVERE, String.format("Possible stream "
+                                + "discovered during canon initialization but was "
+                                + "unable to read stream uri from file '%s'",
+                                f.getAbsolutePath()), ex);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull) //filter out any errors to read URI
+                .forEach((uri) -> {
+                    try {
+                        canon.getOrCreateStream(uri);
+                    } catch (UnableToResolveStreamException ex) {
+                        LOGGER.log(Level.SEVERE, String.format("Unable to add "
+                                + "existing stream '%s' to canon instance during "
+                                + "initialization", uri), ex);
+                    }
+                });
+
+        return canon;
     }
 
     /**
@@ -83,8 +126,10 @@ public class Canon {
      * @return transient canon instance
      */
     public static Canon transientInstance() {
-        HierarchicalCodecResolver codecs = new HierarchicalCodecResolver();
-        return new Canon(codecs, new MemoryStreamManager(codecs));
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"),
+                "canon-" + UUID.randomUUID().toString());
+
+        return new Canon(tmpDir, new MemoryStreamProvider());
     }
 
     /**
@@ -106,7 +151,7 @@ public class Canon {
      */
     public EventStream getAdminStream() throws UnableToResolveStreamException {
         try {
-            return streamMgr.getOrCreateStream(INSTANCE_ADMIN_STREAM_NAME);
+            return getOrCreateDefaultStream(INSTANCE_ADMIN_STREAM_NAME);
         } catch (UnableToResolveStreamException ex) {
             LOGGER.log(Level.SEVERE, "Unable to create admin stream", ex);
             throw ex;
@@ -120,7 +165,7 @@ public class Canon {
      * collection will not change any Canon state
      */
     public Collection<EventStream> getStreams() {
-        return streamMgr.getStreams();
+        return new ArrayList(streams.values());
     }
 
     /**
@@ -130,7 +175,7 @@ public class Canon {
      * @return event stream, if registered
      */
     public Optional<EventStream> findStream(String streamName) {
-        return streamMgr.findStream(streamName);
+        return Optional.ofNullable(streams.get(streamName));
     }
 
     /**
@@ -144,7 +189,8 @@ public class Canon {
      */
     public EventStream getOrCreateDefaultStream(String streamName)
             throws UnableToResolveStreamException {
-        return streamMgr.getOrCreateStream(streamName);
+        return getOrCreateStream(defaultProvider.getScheme(),
+                streamName, DEFAULT_STREAM_PROPERTIES);
     }
 
     /**
@@ -157,14 +203,11 @@ public class Canon {
      * @param streamUrl in the following format:
      * scheme://streamName[?streamProperties]
      * @return resolved event stream
-     * @throws StreamAlreadyExistsException the stream could not be registered
-     * because a stream by this name already exists
      * @throws UnableToResolveStreamException if no stream provider could be
      * found or the provider could not load the requested stream
      */
     public EventStream getOrCreateStream(String streamUrl)
-            throws StreamAlreadyExistsException,
-            UnableToResolveStreamException {
+            throws UnableToResolveStreamException {
         try {
             URI uri = URI.create(streamUrl);
             return getOrCreateStream(uri.getScheme(), uri.getHost(),
@@ -185,32 +228,58 @@ public class Canon {
      * @param streamName stream name
      * @param streamProperties stream properties
      * @return registered event stream
-     * @throws StreamAlreadyExistsException thrown if a stream by this name is
-     * already registered with this instance
      * @throws UnableToResolveStreamException thrown if no provider could
      * resolve the stream
      */
     public EventStream getOrCreateStream(String scheme, String streamName,
             Map<String, String> streamProperties)
-            throws UnableToResolveStreamException, StreamAlreadyExistsException {
+            throws UnableToResolveStreamException {
 
-        if (streamMgr.streamExists(streamName)) {
-            return streamMgr.findStream(streamName).get();
+        synchronized (streams) {
+            if (streams.containsKey(streamName)) {
+                return streams.get(streamName);
+            }
+
+            Optional<EventStreamProvider> provider = streamProviders.findProvider(scheme);
+            if (!provider.isPresent()) {
+                //scheme is still not available after provider reload
+                final String error = String.format("Unable to resolve stream "
+                        + "'%s' with provider scheme '%s', no provider found.",
+                        streamName, scheme);
+                LOGGER.warning(error);
+                throw new UnableToResolveStreamException(error);
+            }
+
+            //stream not registered, create a default stream by this name
+            EventStream stream = createStream(streamName, streamProperties, provider.get());
+            streams.put(streamName, stream);
+            return stream;
         }
 
-        Optional<EventStreamProvider> provider = streamProviders.findProvider(scheme);
-        if (!provider.isPresent()) {
-            //scheme is still not available after provider reload
-            final String error = String.format("Unable to resolve stream "
-                    + "'%s' with provider scheme '%s', no provider found.",
-                    streamName, scheme);
-            LOGGER.warning(error);
-            throw new UnableToResolveStreamException(error);
-        }
+    }
 
-        //provider is available, attempt to load stream
-        return streamMgr.getOrCreateStream(streamName, streamProperties,
-                provider.get());
+    /**
+     * Creates a new event stream, using the event stream provider, after
+     * applying stream manager default stream properties. This method does not
+     * register the stream with the manager.
+     *
+     * @param streamName
+     * @param streamProperties
+     * @param provider
+     * @return Created event stream
+     * @throws UnableToResolveStreamException
+     */
+    public EventStream createStream(String streamName,
+            Map<String, String> streamProperties, EventStreamProvider provider)
+            throws UnableToResolveStreamException {
+
+        //add default properties
+        Map<String, String> streamPropertiesCopy
+                = new HashMap<>(streamProperties); //defensive copy
+        DEFAULT_STREAM_PROPERTIES
+                .forEach((k, v) -> streamPropertiesCopy.putIfAbsent(k, v));
+
+        return provider.getStream(streamName, streamPropertiesCopy, codecs);
     }
 
     /**
@@ -220,10 +289,6 @@ public class Canon {
      */
     public void useCodec(EventCodec<?> codec) {
         codecs.add(codec);
-    }
-
-    public CodecResolver getCodecs() {
-        return codecs;
     }
 
     /**

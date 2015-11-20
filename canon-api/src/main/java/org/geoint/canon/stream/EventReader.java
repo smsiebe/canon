@@ -16,10 +16,11 @@
 package org.geoint.canon.stream;
 
 import java.io.Closeable;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
-import org.geoint.canon.stream.EventStream;
-import org.geoint.canon.stream.StreamReadException;
 
 /**
  * Sequential event reader.
@@ -44,8 +45,13 @@ public interface EventReader extends Closeable, AutoCloseable {
      * @throws StreamReadException thrown if there is a problem reading events
      * from the event stream
      */
-    CommittedEventMessage next() throws StreamReadException;
+    Optional<CommittedEventMessage> poll() throws StreamReadException;
 
+    Optional<CommittedEventMessage> poll (long timeout, TimeUnit unit) 
+            throws StreamReadException;
+    
+    CommittedEventMessage take() throws StreamReadException, TimeoutException;
+    
     /**
      * Set the readers in the event sequence position by event Id.
      *

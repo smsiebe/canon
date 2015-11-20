@@ -1,48 +1,53 @@
 package org.geoint.canon.stream.event;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
- * Event identifying an event on a stream which must be deleted from the domain.
+ * Event which replaces an event that was sanitized.
+ * <p>
+ * This event is unique in that it provides a reference to an event that exists
+ * later in the stream.
  *
+ * @see SanitizeEvent
  * @author steve_siebert
  */
 public class EventSanitized {
 
     private final String streamName;
-    private final String sanitizedEventId;
-    private final String justification;
+    private final String futureSanitizingEvent;
+    private final ZonedDateTime dateTimeSanitized;
 
-    public EventSanitized(String streamName, String sanitizedEventId,
-            String justification) {
+    public EventSanitized(String streamName, String futureSanitizingEvent,
+            ZonedDateTime dateTimeSanitized) {
         this.streamName = streamName;
-        this.sanitizedEventId = sanitizedEventId;
-        this.justification = justification;
+        this.futureSanitizingEvent = futureSanitizingEvent;
+        this.dateTimeSanitized = dateTimeSanitized;
+    }
+
+    public String getFutureSanitizingEvent() {
+        return futureSanitizingEvent;
     }
 
     public String getStreamName() {
         return streamName;
     }
 
-    public String getSanitizedEventId() {
-        return sanitizedEventId;
-    }
-
-    public String getJustification() {
-        return justification;
+    public ZonedDateTime getDateTimeSanitized() {
+        return dateTimeSanitized;
     }
 
     @Override
     public String toString() {
-        return String.format("Event '%s' was sanitized on stream '%s':  %s",
-                sanitizedEventId, streamName, justification);
+        return String.format("This event was sanitized by event %s on %s",
+                futureSanitizingEvent,
+                dateTimeSanitized.toString());
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + Objects.hashCode(this.streamName);
-        hash = 47 * hash + Objects.hashCode(this.sanitizedEventId);
+        int hash = 5;
+        hash = 71 * hash + Objects.hashCode(this.futureSanitizingEvent);
         return hash;
     }
 
@@ -58,10 +63,7 @@ public class EventSanitized {
             return false;
         }
         final EventSanitized other = (EventSanitized) obj;
-        if (!Objects.equals(this.streamName, other.streamName)) {
-            return false;
-        }
-        if (!Objects.equals(this.sanitizedEventId, other.sanitizedEventId)) {
+        if (!Objects.equals(this.futureSanitizingEvent, other.futureSanitizingEvent)) {
             return false;
         }
         return true;
