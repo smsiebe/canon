@@ -1,13 +1,8 @@
 package org.geoint.canon.impl.stream;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecResolver;
@@ -15,6 +10,7 @@ import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.stream.file.FileStreamProvider;
 import org.geoint.canon.spi.stream.EventStreamProvider;
+import org.geoint.canon.stream.AppendOutOfSequenceException;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
@@ -26,13 +22,14 @@ import org.geoint.canon.stream.EventHandler;
  * @author steve_siebert
  */
 public abstract class AbstractEventStream implements EventStream {
-
-    private final String streamName;
-    private final HierarchicalCodecResolver streamCodecs;
-    private final Map<String, String> streamProperties;
+    
+    protected volatile String lastEventId;
+    protected final String streamName;
+    protected final HierarchicalCodecResolver streamCodecs;
+    protected final Map<String, String> streamProperties;
     private final EventStreamProvider offlineStreamProvider;
     private EventStream offlineStream;
-
+    
     private static final Logger LOGGER
             = Logger.getLogger(EventStream.class.getPackage().getName());
 
@@ -73,77 +70,139 @@ public abstract class AbstractEventStream implements EventStream {
             createOffline();
         }
     }
-
+    
     @Override
     public boolean isOfflineable() {
         return offlineStream != null;
     }
-
+    
     @Override
     public void setOffline(boolean offline) {
         if (offlineStream == null) {
             createOffline();
         }
     }
-
+    
     @Override
     public String getName() {
         return streamName;
     }
-
+    
     @Override
     public String getLastEventId() {
-
+        return lastEventId;
     }
     
     @Override
     public EventAppender appendToEnd() {
-
+        return new TrackingEventAppender(newTailAppender());
     }
-
+    
     @Override
-    public EventAppender appendAfter(String previousEventId) {
-
+    public EventAppender appendAfter(String previousEventId)
+            throws AppendOutOfSequenceException {
+        if (!lastEventId.contentEquals(previousEventId)) {
+            //eliminate the need to wait until transaction commit if the 
+            //stream is already advanced past the requested position
+            throw new AppendOutOfSequenceException(streamName, String.format(
+                    "Unable to append an event after %s, stream is currently positioned "
+                    + "at %s", previousEventId, lastEventId));
+        }
+        
+        return new PositionedEventAppender(previousEventId);
     }
     
     @Override
     public void addHandler(EventHandler handler) {
-
+        
     }
-
+    
     @Override
     public void addHandler(EventHandler handler, Predicate filter) {
-
+        
     }
-
+    
     @Override
     public void addHandler(EventHandler handler, String lastEventId) {
-
+        
     }
-
+    
     @Override
     public void addHandler(EventHandler handler, Predicate filter, String lastEventId) {
-
+        
     }
-
+    
     @Override
     public void removeHandler(EventHandler handler) {
-
+        
     }
-
+    
     @Override
     public void useCodec(EventCodec codec) {
-
+        this.streamCodecs.add(codec);
     }
-
+    
+    @Override
+    public Optional<EventCodec> getCodec(String eventType) {
+        return streamCodecs.getCodec(eventType);
+    }
+    
     @Override
     public void close() throws IOException {
-
+        
     }
-
+    
     @Override
     public void flush() throws IOException {
+        
+    }
+    
+    protected final void createOffline() {
+        
+    }
+    
+    private String getOfflineStreamName() {
+        return String.format("org.canon.offline.%s" + streamName);
+    }
+    
+    private static EventStreamProvider getDefaultOfflineStreamProvider() {
+        return new FileStreamProvider();
+    }
 
+    /**
+     * Returns a new event tail appender.
+     *
+     * @return returns a new appender that writes an event to the tail of the
+     * stream
+     */
+    protected abstract EventAppender newTailAppender();
+    
+    private class TrackingEventAppender implements EventAppender {
+        
+        protected final EventAppender appender;
+
+        public TrackingEventAppender(EventAppender appender) {
+            this.appender = appender;
+        }
+        
+        
+    }
+
+    /**
+     * Decorator which that will only commit an event to the stream at a
+     * specific position and updates the streams event position (tracking).
+     *
+     * If the last event id of the stream does not equal the position defined at
+     * construction the appender will throw an exception at commit time.
+     *
+     */
+    private class TrackingPositionedEventAppender extends TrackingEventAppender {
+
+        public TrackingPositionedEventAppender(EventAppender appender) {
+            super(appender);
+        }
+        
+        
     }
 
 //    @Override
@@ -187,30 +246,4 @@ public abstract class AbstractEventStream implements EventStream {
 //            ), ex);
 //        }
 //    }
-    
-    protected final void createOffline() {
-
-    }
-
-    private String getOfflineStreamName() {
-        return String.format("org.canon.offline.%s" + streamName);
-    }
-
-    private static EventStreamProvider getDefaultOfflineStreamProvider() {
-        return new FileStreamProvider();
-    }
-
-    private void recursiveDeleteDirectory(File directory) throws IOException {
-        Files.walkFileTree(directory.toPath(), new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.delete(file);
-                return super.visitFile(file, attrs);
-            }
-
-        });
-    }
-
-
 }

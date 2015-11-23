@@ -16,7 +16,6 @@
 package org.geoint.canon.tx;
 
 import java.util.concurrent.Future;
-import org.geoint.canon.stream.AppendOutOfSequenceException;
 
 /**
  * ACID compliant transaction used to commit multiple events in a single commit.
@@ -43,13 +42,40 @@ public interface EventTransaction {
     boolean isActive();
 
     /**
+     * Determine if the transaction has been committed.
+     * <p>
+     * If this method returns true, isActive and isRollback must return false.
+     *
+     * @return true if the transaction was successfully committed
+     */
+    boolean isCommitted();
+
+    /**
+     * Determine if the transaction has been rolled back.
+     * <p>
+     * If this method is true, isActive and isCommitted must return false.
+     *
+     * @return true if the transaction was rolled back
+     */
+    boolean isRollback();
+
+    /**
+     * Return the results of the transaction if isActive returns false,
+     * otherwise returns null.
+     *
+     * @return results of the transaction or null
+     */
+    TransactionResult getResult();
+
+    /**
      * Cancels the transaction, rolling back any changes that may have taken
      * place.
      *
+     * @return future rollback results
      * @throws EventTransactionException thrown if there was a problem appending
      * events to the stream
      */
-    void rollback() throws EventTransactionException;
+    Future<TransactionRolledBack> rollback() throws EventTransactionException;
 
     /**
      * Commits all the events included in this transaction to the end of the
@@ -65,19 +91,4 @@ public interface EventTransaction {
      */
     Future<TransactionCommitted> commit() throws EventTransactionException;
 
-    /**
-     * Commits all the events included in this transaction after the specified
-     * event in the stream.
-     *
-     *
-     * @param previousEventId
-     * @return commit results
-     * @throws EventTransactionException thrown if there was a problem appending
-     * events to the stream
-     * @throws AppendOutOfSequenceException thrown if the transaction could not
-     * be appended because the previous event id is not the last event id of the
-     * stream
-     */
-    Future<TransactionCommitted> commit(String previousEventId)
-            throws EventTransactionException, AppendOutOfSequenceException;
 }

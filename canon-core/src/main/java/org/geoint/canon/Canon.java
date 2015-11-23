@@ -196,9 +196,9 @@ public class Canon {
     /**
      * Retrieve or create a new event stream with the canon instance.
      * <p>
-     * Canon will attempt to resolve the stream by checking attempting to
-     * retrieve a stream instance from each
-     * {@link EventStreamProvider provider}.
+ Canon will attempt to getCodec the stream by checking attempting to
+ retrieve a stream instance from each
+ {@link EventStreamProvider provider}.
      *
      * @param streamUrl in the following format:
      * scheme://streamName[?streamProperties]
@@ -229,7 +229,7 @@ public class Canon {
      * @param streamProperties stream properties
      * @return registered event stream
      * @throws UnableToResolveStreamException thrown if no provider could
-     * resolve the stream
+ getCodec the stream
      */
     public EventStream getOrCreateStream(String scheme, String streamName,
             Map<String, String> streamProperties)

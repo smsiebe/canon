@@ -16,6 +16,9 @@
 package org.geoint.canon.stream;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
 
@@ -28,6 +31,8 @@ public abstract class EventReaderDecorator implements EventReader {
 
     protected final EventReader reader;
     protected String currentEventId;
+
+    private static final long THREAD_WAIT_MILLS = 10L;
 
     public EventReaderDecorator(EventReader reader)
             throws StreamReadException {
@@ -45,14 +50,50 @@ public abstract class EventReaderDecorator implements EventReader {
     }
 
     /**
-     * Default implementation delegates call to decorated reader.
+     * This method calls {@link EventReaderDecorator#poll() }, rather than
+     * delegating the call to the decorated reader, so that decorator
+     * implementations only need to implement 
+     * {@link EventReaderDecorator#poll() } for most cases.
+     *
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws StreamReadException
+     * @throws InterruptedException
+     */
+    @Override
+    public Optional<CommittedEventMessage> poll(long timeout, TimeUnit unit)
+            throws StreamReadException, InterruptedException {
+        long waited = 0;
+        Optional<CommittedEventMessage> event = Optional.empty();
+        while (!(event = this.poll()).isPresent()
+                || unit.toMillis(timeout) > waited) {
+            Thread.sleep(THREAD_WAIT_MILLS);
+            waited += THREAD_WAIT_MILLS;
+        }
+
+        return event;
+    }
+
+    /**
+     * This method calls {@link EventReaderDecorator#poll() }, rather than
+     * delegating the call to the decorated reader, so that decorator
+     * implementations only need to implement 
+     * {@link EventReaderDecorator#poll() } for most cases.
      *
      * @return
      * @throws StreamReadException
+     * @throws TimeoutException
+     * @throws InterruptedException
      */
     @Override
-    public CommittedEventMessage next() throws StreamReadException {
-        return reader.next();
+    public CommittedEventMessage take()
+            throws StreamReadException, TimeoutException, InterruptedException {
+        Optional<CommittedEventMessage> event = null;
+        while (!(event = this.poll()).isPresent()) {
+            Thread.sleep(THREAD_WAIT_MILLS);
+        }
+        return event.get();
     }
 
     /**

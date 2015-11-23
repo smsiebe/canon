@@ -1,5 +1,6 @@
 package org.geoint.canon.stream;
 
+import java.util.concurrent.Future;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
@@ -32,8 +33,11 @@ public interface EventAppender {
      *
      * @param message message to append to the stream
      * @return this appender (fluid interface)
+     * @throws StreamAppendException thrown if there is a problem appending and
+     * event to the contextual stream
      */
-    EventAppender append(EventMessage message);
+    EventAppender append(EventMessage message)
+            throws StreamAppendException;
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.
@@ -54,7 +58,7 @@ public interface EventAppender {
      * committing the transaction, indicating the transaction failed and was
      * rolled back
      */
-    TransactionCommitted commit() throws EventTransactionException;
+    Future<TransactionCommitted> commit() throws EventTransactionException;
 
     /**
      * Rollback (remove) all events added to this appender.
@@ -64,5 +68,5 @@ public interface EventAppender {
      * back the transaction, but the events will still not be committed to the
      * stream
      */
-    TransactionRolledBack rollback() throws EventTransactionException;
+    Future<TransactionRolledBack> rollback() throws EventTransactionException;
 }

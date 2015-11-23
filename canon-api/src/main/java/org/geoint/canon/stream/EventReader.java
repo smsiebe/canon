@@ -47,11 +47,30 @@ public interface EventReader extends Closeable, AutoCloseable {
      */
     Optional<CommittedEventMessage> poll() throws StreamReadException;
 
-    Optional<CommittedEventMessage> poll (long timeout, TimeUnit unit) 
-            throws StreamReadException;
-    
-    CommittedEventMessage take() throws StreamReadException, TimeoutException;
-    
+    /**
+     * Returns the next event in the stream, waiting up to the specified time
+     * for an event.
+     *
+     * @param timeout
+     * @param unit
+     * @return next event or null if timed out
+     * @throws StreamReadException thrown if there is a problem reading events
+     * @throws InterruptedException thrown if the blocked thread was interrupted
+     */
+    Optional<CommittedEventMessage> poll(long timeout, TimeUnit unit)
+            throws StreamReadException, InterruptedException;
+
+    /**
+     * Returns the next event in the stream, waiting if necessary.
+     *
+     * @return next event in the stream
+     * @throws StreamReadException thrown if there is a problem reading events
+     * @throws TimeoutException thrown if the blocked thread was interrupted
+     * @throws InterruptedException
+     */
+    CommittedEventMessage take()
+            throws StreamReadException, TimeoutException, InterruptedException;
+
     /**
      * Set the readers in the event sequence position by event Id.
      *

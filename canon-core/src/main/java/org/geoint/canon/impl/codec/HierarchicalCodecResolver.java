@@ -53,12 +53,12 @@ public class HierarchicalCodecResolver implements CodecResolver {
      * @return resolved codec or null
      */
     @Override
-    public Optional<EventCodec> resolve(String eventType) {
+    public Optional<EventCodec> getCodec(String eventType) {
         return Optional.ofNullable(tierCodecs.stream()
                 .filter((c) -> c.getSupportedEventType().contentEquals(eventType))
                 .findFirst()
                 .orElseGet(() -> (parentTier != null)
-                        ? parentTier.resolve(eventType).orElseGet(() -> null)
+                        ? parentTier.getCodec(eventType).orElseGet(() -> null)
                         : null
                 )
         );

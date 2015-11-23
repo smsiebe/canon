@@ -16,9 +16,9 @@
 package org.geoint.canon.stream;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.Flushable;
 import java.util.function.Predicate;
+import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.CommittedEventMessage;
@@ -33,7 +33,7 @@ import org.geoint.canon.event.CommittedEventMessage;
  * @param <E> event message type
  */
 public interface EventStream<E extends EventMessage>
-        extends Closeable, Flushable, AutoCloseable {
+        extends CodecResolver, Closeable, Flushable, AutoCloseable {
 
     /**
      * Channel-unique name of the stream.
@@ -119,8 +119,11 @@ public interface EventStream<E extends EventMessage>
      *
      * @param previousEventId
      * @return transactional event appender
+     * @throws AppendOutOfSequenceException thrown if the previous event id is
+     * not current event id
      */
-    EventAppender appendAfter(String previousEventId);
+    EventAppender appendAfter(String previousEventId)
+            throws AppendOutOfSequenceException;
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.
@@ -140,7 +143,7 @@ public interface EventStream<E extends EventMessage>
     boolean isOfflineable();
 
     /**
-     * 
+     *
      *
      * @param offline if true makes offline capable, if false remove offline
      * capability if not intrinsic

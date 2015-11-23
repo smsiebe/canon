@@ -19,40 +19,21 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
 import org.geoint.canon.event.CommittedEventMessage;
-import org.geoint.canon.event.EventMessage;
 
 /**
  * Event created upon successful transaction commit.
  *
  * @author steve_siebert
  */
-public final class TransactionCommitted {
+public final class TransactionCommitted extends TransactionResult {
 
-    private final String streamName;
-    private final String transactionId;
-    private final ZonedDateTime commitTime;
     private final Collection<CommittedEventMessage> messages;
 
     public TransactionCommitted(String streamName, String transactionId,
             ZonedDateTime commitTime, CommittedEventMessage... messages) {
-        this.streamName = streamName;
-        this.transactionId = transactionId;
-        this.commitTime = commitTime;
+        super(streamName, transactionId, commitTime);
         this.messages = Arrays.asList(messages);
-    }
-
-    public String getStreamName() {
-        return streamName;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public ZonedDateTime getCommitTime() {
-        return commitTime;
     }
 
     public Collection<CommittedEventMessage> getMessages() {
@@ -62,32 +43,9 @@ public final class TransactionCommitted {
     @Override
     public String toString() {
         return String.format("Transaction '%s' was successfully committed at "
-                + "%s on stream '%s'", transactionId,
-                commitTime.format(DateTimeFormatter.ISO_DATE_TIME),
-                streamName);
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.streamName);
-        hash = 29 * hash + Objects.hashCode(this.transactionId);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TransactionCommitted other = (TransactionCommitted) obj;
-        if (!Objects.equals(this.streamName, other.streamName)) {
-            return false;
-        }
-        return Objects.equals(this.transactionId, other.transactionId);
+                + "%s on stream '%s'", getTransactionId(),
+                getCommitTime().format(DateTimeFormatter.ISO_DATE_TIME),
+                getStreamName());
     }
 
 }

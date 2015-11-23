@@ -10,5 +10,5 @@ import java.util.Optional;
 @FunctionalInterface
 public interface CodecResolver {
 
-    Optional<EventCodec> resolve(String eventType);
+    Optional<EventCodec> getCodec(String eventType);
 }
