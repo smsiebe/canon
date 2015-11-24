@@ -2,6 +2,7 @@ package org.geoint.canon.impl.stream;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import org.geoint.canon.codec.EventCodec;
+import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
@@ -53,7 +55,8 @@ public abstract class AbstractEventAppender implements EventAppender {
     @Override
     public EventMessageBuilder create(String eventType)
             throws StreamAppendException {
-        AppendingEventMessageBuilder mb = new AppendingEventMessageBuilder();
+        AppendingEventMessageBuilder mb
+                = new AppendingEventMessageBuilder(eventType);
         this.append(mb);
         return mb;
     }
@@ -157,7 +160,8 @@ public abstract class AbstractEventAppender implements EventAppender {
         private String authorizedBy;
         private Set<String> triggeredBy;
         private Map<String, String> headers;
-        private InputStream eventContent;
+        private Supplier<InputStream> eventContent;
+        private long eventLength; //set only after the event content has been read fully
 
         public AppendingEventMessageBuilder(String eventType) {
             this.eventType = eventType;
@@ -167,7 +171,7 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         @Override
         public EventMessageBuilder authorizedBy(String authorizerId) {
-            this.authorizedBy = authorizedBy;
+            this.authorizedBy = authorizerId;
             return this;
         }
 
@@ -185,57 +189,62 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         @Override
         public void event(InputStream event) {
-
+            this.eventContent = () -> event;
         }
 
         @Override
-        public void event(Object event) {
-
+        public void event(Object event) throws EventCodecException {
+            event(event, codecs.getCodec(eventType).get());
         }
 
         @Override
-        public void event(Object event, EventCodec<?> codec) {
-
+        public void event(Object event, EventCodec<?> codec)
+                throws EventCodecException {
+            if (codec == null) {
+                Optional<EventCodec> c = codecs.getCodec(eventType);
+                codec = (c.orElseThrow(() -> new CodecNotFoundException("Unable to "
+                        + "find codec for event '%s'", eventType)));
+            }
         }
 
         @Override
         public String[] getTriggerIds() {
-
+            return triggeredBy.toArray(new String[triggeredBy.size()]);
         }
 
         @Override
         public String getAuthorizerId() {
-
+            return authorizedBy;
         }
 
         @Override
         public String getStreamName() {
-
+            return stream.getName();
         }
 
         @Override
         public String getEventType() {
-
+            return eventType;
         }
 
         @Override
         public Map<String, String> getHeaders() {
-
+            return Collections.unmodifiableMap(headers);
         }
 
         @Override
         public Optional<String> findHeader(String headerName) {
-
+            return Optional.ofNullable(headers.get(headerName));
         }
 
         @Override
         public String getHeader(String headerName, Supplier<String> defaultValue) {
-
+            return findHeader(headerName).orElseGet(defaultValue);
         }
 
         @Override
         public InputStream getEventContent() {
-
+            return eventContent;
         }
 
         @Override

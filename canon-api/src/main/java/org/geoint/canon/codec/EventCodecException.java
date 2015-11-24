@@ -24,44 +24,19 @@ import org.geoint.canon.event.EventException;
  */
 public class EventCodecException extends EventException {
 
-    private final Class<?> eventClass;
-    private final String eventType;
-    private final Class<? extends EventCodec> codec;
-
-    public EventCodecException(Class<?> eventClass, String eventType,
-            Class<? extends EventCodec> codec, String message) {
-        super(message(eventClass, eventType, codec, message));
-        this.eventClass = eventClass;
-        this.eventType = eventType;
-        this.codec = codec;
+    public EventCodecException() {
     }
 
-    public EventCodecException(Class<?> eventClass, String eventType,
-            Class<? extends EventCodec> codec, String message, Throwable cause) {
-        super(message(eventClass, eventType, codec, message), cause);
-        this.eventClass = eventClass;
-        this.eventType = eventType;
-        this.codec = codec;
+    public EventCodecException(String message) {
+        super(message);
     }
 
-    private static String message(Class<?> eventClass, String eventType,
-            Class<? extends EventCodec> codec, String message) {
-        return String.format("Unable to encode domain event type '%s' from "
-                + "instance of '%s' using codec '%s'. %s",
-                eventType, eventClass.getCanonicalName(),
-                codec.getCanonicalName(), (message != null) ? message : "");
+    public EventCodecException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public Class<?> getEventClass() {
-        return eventClass;
-    }
-
-    public String getEventType() {
-        return eventType;
-    }
-
-    public Class<? extends EventCodec> getCodec() {
-        return codec;
+    public EventCodecException(Throwable cause) {
+        super(cause);
     }
 
 }

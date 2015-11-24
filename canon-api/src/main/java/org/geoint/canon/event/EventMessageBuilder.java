@@ -17,6 +17,7 @@ package org.geoint.canon.event;
 
 import java.io.InputStream;
 import org.geoint.canon.codec.EventCodec;
+import org.geoint.canon.codec.EventCodecException;
 
 /**
  * Creates an EventMessage wrapper for an event.
@@ -78,8 +79,11 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event
+     * @throws EventCodecException thrown if no codec could be found or the
+     * discovered codec could not be used to encode this object type
+     *
      */
-    void event(Object event);
+    void event(Object event) throws EventCodecException;
 
     /**
      * Terminating method providing the event message payload and a specific
@@ -91,6 +95,8 @@ public interface EventMessageBuilder {
      *
      * @param event
      * @param codec
+     * @throws EventCodecException thrown if the codec is invalid or could not
+     * be used to encode this object type
      */
-    void event(Object event, EventCodec<?> codec);
+    void event(Object event, EventCodec<?> codec) throws EventCodecException;
 }
