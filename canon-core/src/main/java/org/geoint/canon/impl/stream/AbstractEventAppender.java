@@ -1,5 +1,6 @@
 package org.geoint.canon.impl.stream;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,12 +11,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.geoint.canon.codec.CodecNotFoundException;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
+import org.geoint.canon.impl.codec.PipedEventEncoder;
 import org.geoint.canon.impl.concurrent.CompletedFuture;
 import org.geoint.canon.impl.tx.DefaultEventTransaction;
 import org.geoint.canon.impl.tx.EventTransactionFactory;
@@ -38,6 +43,8 @@ public abstract class AbstractEventAppender implements EventAppender {
     protected final EventStream stream;
     protected final EventTransaction tx;
     protected final HierarchicalCodecResolver codecs;
+
+    private final Logger LOGGER = Logger.getLogger(EventAppender.class.getName());
 
     public AbstractEventAppender(EventStream stream) {
         this.stream = stream;
@@ -158,10 +165,9 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         private final String eventType;
         private String authorizedBy;
-        private Set<String> triggeredBy;
-        private Map<String, String> headers;
+        private final Set<String> triggeredBy;
+        private final Map<String, String> headers;
         private Supplier<InputStream> eventContent;
-        private long eventLength; //set only after the event content has been read fully
 
         public AppendingEventMessageBuilder(String eventType) {
             this.eventType = eventType;
@@ -198,13 +204,34 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
-        public void event(Object event, EventCodec<?> codec)
+        public void event(final Object event, EventCodec<?> codec)
                 throws EventCodecException {
+            final EventCodec encodingCodec;
             if (codec == null) {
                 Optional<EventCodec> c = codecs.getCodec(eventType);
-                codec = (c.orElseThrow(() -> new CodecNotFoundException("Unable to "
-                        + "find codec for event '%s'", eventType)));
+                encodingCodec = (c.orElseThrow(() -> new CodecNotFoundException(
+                        "Unable to find codec for event '%s'", eventType)));
+            } else {
+                encodingCodec = codec;
             }
+
+            if (!encodingCodec.getSupportedEventType().contentEquals(eventType)) {
+                throw new EventCodecException(String.format("Codec '%s' cannot "
+                        + "be used to encode event type '%s'",
+                        encodingCodec.getClass().getCanonicalName(),
+                        eventType));
+            }
+            
+            this.eventContent = () -> {
+                try {
+                    return new PipedEventEncoder(encodingCodec).encode(event);
+                } catch (EventCodecException ex) {
+                    LOGGER.log(Level.WARNING, "Event cannot be encoded", ex);
+                    //set the event content to a supplier that will return an 
+                    //inputstream that will always throw the codec exception
+                    return new ExceptionalInputStream(ex);
+                }
+            };
         }
 
         @Override
@@ -244,17 +271,32 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         @Override
         public InputStream getEventContent() {
-            return eventContent;
+            return eventContent.get();
         }
 
         @Override
-        public int getEventLength() {
+        public <E> E getEvent(EventCodec<E> codec) 
+                throws IOException, EventCodecException {
+            return codec.decode(this);
+        }
 
+    }
+
+    /**
+     * Will always throw an IOException with the the provided exception as the
+     * causedBy for any method called on the InputStream.
+     */
+    private class ExceptionalInputStream extends InputStream {
+
+        private final IOException ex;
+
+        public ExceptionalInputStream(Throwable ex) {
+            this.ex = new IOException(ex);
         }
 
         @Override
-        public <E> E getEvent(EventCodec<E> codec) {
-
+        public int read() throws IOException {
+            throw ex;
         }
 
     }

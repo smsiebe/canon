@@ -15,11 +15,13 @@
  */
 package org.geoint.canon.event;
 
+import java.io.IOException;
 import org.geoint.canon.codec.EventCodec;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.geoint.canon.codec.EventCodecException;
 
 /**
  * A domain-defined occurrence.
@@ -30,7 +32,6 @@ import java.util.function.Supplier;
  * @author Steve Siebert <steve@t-3-solutions.com>
  */
 public interface EventMessage {
-
 
     /**
      * Event IDs that "triggered" (caused) this event.
@@ -103,19 +104,14 @@ public interface EventMessage {
     InputStream getEventContent();
 
     /**
-     * Length of the event content byte stream.
-     *
-     * @return event content length
-     */
-    int getEventLength();
-
-    /**
      * Return the domain event type wrapped by this message using the provided
      * codec to decode the event content.
      *
      * @param <E>
      * @param codec used to decode the event content
      * @return domain event
+     * @throws IOException
+     * @throws EventCodecException
      */
-    <E> E getEvent(EventCodec<E> codec);
+    <E> E getEvent(EventCodec<E> codec) throws IOException, EventCodecException;
 }

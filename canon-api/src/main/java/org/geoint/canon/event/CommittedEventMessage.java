@@ -20,4 +20,11 @@ public interface CommittedEventMessage extends EventMessage {
      * @return previous event id in the sequence
      */
     String getPreviousEventId();
+
+    /**
+     * Length of the event content byte stream.
+     *
+     * @return event content length
+     */
+    int getEventLength();
 }
