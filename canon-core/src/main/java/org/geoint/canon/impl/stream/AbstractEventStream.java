@@ -3,17 +3,21 @@ package org.geoint.canon.impl.stream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
+import org.geoint.canon.impl.concurrent.FutureWatcher;
 import org.geoint.canon.impl.stream.file.FileStreamProvider;
 import org.geoint.canon.spi.stream.EventStreamProvider;
 import org.geoint.canon.stream.AppendOutOfSequenceException;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
+import org.geoint.canon.tx.EventTransactionException;
+import org.geoint.canon.tx.TransactionCommitted;
 
 /**
  * Implements common event stream methods requiring event stream implementations
@@ -22,14 +26,14 @@ import org.geoint.canon.stream.EventHandler;
  * @author steve_siebert
  */
 public abstract class AbstractEventStream implements EventStream {
-    
+
     protected volatile String lastEventId;
     protected final String streamName;
     protected final HierarchicalCodecResolver streamCodecs;
     protected final Map<String, String> streamProperties;
     private final EventStreamProvider offlineStreamProvider;
     private EventStream offlineStream;
-    
+
     private static final Logger LOGGER
             = Logger.getLogger(EventStream.class.getPackage().getName());
 
@@ -70,34 +74,38 @@ public abstract class AbstractEventStream implements EventStream {
             createOffline();
         }
     }
-    
+
     @Override
     public boolean isOfflineable() {
         return offlineStream != null;
     }
-    
+
     @Override
     public void setOffline(boolean offline) {
         if (offlineStream == null) {
             createOffline();
         }
     }
-    
+
     @Override
     public String getName() {
         return streamName;
     }
-    
+
     @Override
     public String getLastEventId() {
         return lastEventId;
     }
-    
+
     @Override
     public EventAppender appendToEnd() {
-        return new TrackingEventAppender(newTailAppender());
+        /*
+         * decorates the stream with a TrackingEventAppender to keep the 
+         * lasteventid accurate
+         */
+        return new TrackingEventAppender(newAppender());
     }
-    
+
     @Override
     public EventAppender appendAfter(String previousEventId)
             throws AppendOutOfSequenceException {
@@ -105,87 +113,103 @@ public abstract class AbstractEventStream implements EventStream {
             //eliminate the need to wait until transaction commit if the 
             //stream is already advanced past the requested position
             throw new AppendOutOfSequenceException(streamName, String.format(
-                    "Unable to append an event after %s, stream is currently positioned "
-                    + "at %s", previousEventId, lastEventId));
+                    "Unable to append an event after %s, stream is currently "
+                    + "positioned at %s", previousEventId, lastEventId));
         }
-        
-        return new PositionedEventAppender(previousEventId);
+        /*
+         * decorates the stream with a TrackingPositionedEventAppender to 
+         * ensure the events are only committed if the lasteventid is the same 
+         * as the one the appender was created with AND to keep the 
+         * lasteventid accurate
+         */
+        return new TrackingPositionedEventAppender(previousEventId, newAppender());
     }
-    
+
     @Override
     public void addHandler(EventHandler handler) {
-        
+
     }
-    
+
     @Override
     public void addHandler(EventHandler handler, Predicate filter) {
-        
+
     }
-    
+
     @Override
     public void addHandler(EventHandler handler, String lastEventId) {
-        
+
     }
-    
+
     @Override
     public void addHandler(EventHandler handler, Predicate filter, String lastEventId) {
-        
+
     }
-    
+
     @Override
     public void removeHandler(EventHandler handler) {
-        
+
     }
-    
+
     @Override
     public void useCodec(EventCodec codec) {
         this.streamCodecs.add(codec);
     }
-    
+
     @Override
     public Optional<EventCodec> getCodec(String eventType) {
         return streamCodecs.getCodec(eventType);
     }
-    
+
     @Override
     public void close() throws IOException {
-        
+
     }
-    
+
     @Override
     public void flush() throws IOException {
-        
+
     }
-    
+
     protected final void createOffline() {
-        
+
     }
-    
+
     private String getOfflineStreamName() {
         return String.format("org.canon.offline.%s" + streamName);
     }
-    
+
     private static EventStreamProvider getDefaultOfflineStreamProvider() {
         return new FileStreamProvider();
     }
 
     /**
-     * Returns a new event tail appender.
+     * Returns a new event appender for the stream.
+     * <p>
+     * The appender needs only to append to the tail of the stream, the
+     * decorators used by this implementation will ensure the events are
+     * sequenced properly.
      *
      * @return returns a new appender that writes an event to the tail of the
      * stream
      */
-    protected abstract EventAppender newTailAppender();
-    
-    private class TrackingEventAppender implements EventAppender {
-        
-        protected final EventAppender appender;
+    protected abstract EventAppender newAppender();
+
+    private class TrackingEventAppender extends EventAppenderDecorator {
 
         public TrackingEventAppender(EventAppender appender) {
-            this.appender = appender;
+            super(appender);
         }
-        
-        
+
+        @Override
+        public Future<TransactionCommitted> commit()
+                throws EventTransactionException {
+            Future<TransactionCommitted> result = super.commit();
+            //asynchrnously update the last event id when the append operation 
+            //completes
+            FutureWatcher.INSTANCE.onSuccess(result, (r) -> lastEventId = r.getLastEventId());
+            return result;
+        }
+
     }
 
     /**
@@ -196,13 +220,16 @@ public abstract class AbstractEventStream implements EventStream {
      * construction the appender will throw an exception at commit time.
      *
      */
-    private class TrackingPositionedEventAppender extends TrackingEventAppender {
+    private class TrackingPositionedEventAppender extends EventAppenderDecorator {
 
-        public TrackingPositionedEventAppender(EventAppender appender) {
-            super(appender);
+        private final String previousEventId;
+
+        public TrackingPositionedEventAppender(String previousEventId,
+                EventAppender appender) {
+            super(new TrackingEventAppender(appender));
+            this.previousEventId = previousEventId;
         }
-        
-        
+
     }
 
 //    @Override

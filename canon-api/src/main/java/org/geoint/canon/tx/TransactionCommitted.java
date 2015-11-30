@@ -17,6 +17,7 @@ package org.geoint.canon.tx;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.geoint.canon.event.CommittedEventMessage;
@@ -29,15 +30,40 @@ import org.geoint.canon.event.CommittedEventMessage;
 public final class TransactionCommitted extends TransactionResult {
 
     private final Collection<CommittedEventMessage> messages;
+    private final String lastEventId;
 
     public TransactionCommitted(String streamName, String transactionId,
             ZonedDateTime commitTime, CommittedEventMessage... messages) {
         super(streamName, transactionId, commitTime);
-        this.messages = Arrays.asList(messages);
+        this.messages = new ArrayList<>(messages.length);
+
+        final Collection<String> previousEventIds = new ArrayList<>(messages.length);
+        final Collection<String> eventIds = new ArrayList<>(messages.length);
+        Arrays.stream(messages).forEach((m) -> {
+            previousEventIds.add(m.getPreviousEventId());
+            eventIds.add(m.getId());
+            this.messages.add(m);
+        });
+        eventIds.removeAll(previousEventIds); //eliminate any events that have another listed as its successor
+
+        assert eventIds.size() == 1 : "Unable to determine the last event id "
+                + "for the transactions, there is more than one event without "
+                + "a successor.";
+
+        this.lastEventId = eventIds.iterator().next();
     }
 
     public Collection<CommittedEventMessage> getMessages() {
         return messages;
+    }
+
+    /**
+     * Returns the last event id from the committed messages.
+     *
+     * @return the last event id from this transaction
+     */
+    public String getLastEventId() {
+        return lastEventId;
     }
 
     @Override
