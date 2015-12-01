@@ -17,7 +17,7 @@ package org.geoint.canon.stream;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.geoint.canon.event.CommittedEventMessage;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * Event callback interface notified as events are appended to, or a relevant
@@ -41,7 +41,7 @@ public interface EventHandler {
      * @param event next event to handle
      * @throws Exception thrown if there is a problem processing the event
      */
-    void handle(CommittedEventMessage event) throws Exception;
+    void handle(AppendedEventMessage event) throws Exception;
 
     /**
      * Called when the handler is unable to process an event.
@@ -50,11 +50,13 @@ public interface EventHandler {
      * @param ex
      * @return
      */
-    default EventHandlerAction onFailure(CommittedEventMessage event,
+    default EventHandlerAction onFailure(AppendedEventMessage event,
             Exception ex) {
         LOGGER.log(Level.WARNING,
-                String.format("Unable to handle event %s, skipping.",
-                        event.getId()), ex);
-        return EventHandlerAction.CONTINUE;
+                String.format("Unable to handle event %s of type %s,"
+                        + " removing handler.",
+                        event.getSequence().asString(),
+                        event.getEventType()), ex);
+        return EventHandlerAction.FAIL;
     }
 }

@@ -2,8 +2,8 @@ package org.geoint.canon.impl.stream;
 
 import java.io.File;
 import java.util.function.Predicate;
-import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.stream.EventStream;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * An event stream which is accessed locally (on the same system as the canon
@@ -24,7 +24,7 @@ public abstract class LocalEventStream implements EventStream {
      * archived
      */
     public void enableArchive(File archiveDir, boolean compress,
-            Predicate<CommittedEventMessage> archiveFilter) {
+            Predicate<AppendedEventMessage> archiveFilter) {
         throw new UnsupportedOperationException();
     }
 

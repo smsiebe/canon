@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * Decorates an EventReader.
@@ -62,10 +62,10 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws InterruptedException
      */
     @Override
-    public Optional<CommittedEventMessage> poll(long timeout, TimeUnit unit)
+    public Optional<AppendedEventMessage> poll(long timeout, TimeUnit unit)
             throws StreamReadException, InterruptedException {
         long waited = 0;
-        Optional<CommittedEventMessage> event = Optional.empty();
+        Optional<AppendedEventMessage> event = Optional.empty();
         while (!(event = this.poll()).isPresent()
                 || unit.toMillis(timeout) > waited) {
             Thread.sleep(THREAD_WAIT_MILLS);
@@ -87,9 +87,9 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws InterruptedException
      */
     @Override
-    public CommittedEventMessage take()
+    public AppendedEventMessage take()
             throws StreamReadException, TimeoutException, InterruptedException {
-        Optional<CommittedEventMessage> event = null;
+        Optional<AppendedEventMessage> event = null;
         while (!(event = this.poll()).isPresent()) {
             Thread.sleep(THREAD_WAIT_MILLS);
         }

@@ -4,13 +4,9 @@ import java.util.concurrent.Future;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
-import org.geoint.canon.tx.EventTransactionException;
-import org.geoint.canon.tx.TransactionCommitted;
-import org.geoint.canon.tx.TransactionRolledBack;
 
 /**
- * Appends one or more events to an event stream as a single, ACID compliant,
- * transaction.
+ * Appends one or more events to an event stream as a single operation.
  *
  * @author steve_siebert
  */
@@ -36,7 +32,7 @@ public interface EventAppender {
      * @throws StreamAppendException thrown if there is a problem appending and
      * event to the contextual stream
      */
-    EventAppender append(EventMessage message)
+    EventAppender add(EventMessage message)
             throws StreamAppendException;
 
     /**
@@ -51,22 +47,13 @@ public interface EventAppender {
     EventAppender useCodec(EventCodec codec);
 
     /**
-     * Commit all events added to this appender to the event stream.
+     * Appends all events added to this appender to the event stream.
      *
      * @return transaction results
-     * @throws EventTransactionException thrown if there was a problem
-     * committing the transaction, indicating the transaction failed and was
-     * rolled back
+     * @throws StreamAppendException thrown if there was a problem appending the
+     * events to the stream
      */
-    Future<TransactionCommitted> commit() throws EventTransactionException;
+    Future<EventsAppended> append() throws StreamAppendException;
 
-    /**
-     * Rollback (remove) all events added to this appender.
-     *
-     * @return rollback results
-     * @throws EventTransactionException thrown if there was a problem rolling
-     * back the transaction, but the events will still not be committed to the
-     * stream
-     */
-    Future<TransactionRolledBack> rollback() throws EventTransactionException;
+
 }

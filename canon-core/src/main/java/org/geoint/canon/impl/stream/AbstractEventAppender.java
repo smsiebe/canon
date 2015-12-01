@@ -16,21 +16,16 @@ import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecNotFoundException;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
-import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.codec.PipedEventEncoder;
 import org.geoint.canon.impl.concurrent.CompletedFuture;
-import org.geoint.canon.impl.tx.DefaultEventTransaction;
-import org.geoint.canon.impl.tx.EventTransactionFactory;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.tx.EventTransaction;
-import org.geoint.canon.tx.EventTransactionException;
-import org.geoint.canon.tx.TransactionCommitted;
-import org.geoint.canon.tx.TransactionRolledBack;
+import org.geoint.canon.stream.EventsAppended;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * Provides default method implementations for basic appender capabilities,
@@ -95,12 +90,12 @@ public abstract class AbstractEventAppender implements EventAppender {
     }
 
     @Override
-    public Future<TransactionCommitted> commit()
+    public Future<EventsAppended> commit()
             throws EventTransactionException {
         synchronized (tx) {
             if (!tx.isActive()) {
                 if (tx.isCommitted()) {
-                    return CompletedFuture.completed((TransactionCommitted) tx.getResult());
+                    return CompletedFuture.completed((EventsAppended) tx.getResult());
                 }
 
                 throw new EventTransactionException(String.format("Unable to commit "
@@ -146,7 +141,7 @@ public abstract class AbstractEventAppender implements EventAppender {
      * @return
      * @throws StreamAppendException
      */
-    protected abstract Collection<CommittedEventMessage> doCommit()
+    protected abstract Collection<AppendedEventMessage> doCommit()
             throws StreamAppendException;
 
     /**

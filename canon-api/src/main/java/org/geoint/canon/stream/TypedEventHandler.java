@@ -1,7 +1,7 @@
 package org.geoint.canon.stream;
 
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.event.CommittedEventMessage;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * An event handler which only notifies on a single event type.
@@ -18,7 +18,7 @@ public abstract class TypedEventHandler<T> implements EventHandler {
     }
 
     @Override
-    public void handle(CommittedEventMessage event) throws Exception {
+    public void handle(AppendedEventMessage event) throws Exception {
         if (!event.getEventType().equalsIgnoreCase(codec.getSupportedEventType())) {
             return;
         }
@@ -26,6 +26,6 @@ public abstract class TypedEventHandler<T> implements EventHandler {
         handle(event, codec.decode(event));
     }
 
-    protected abstract void handle(CommittedEventMessage msg,
+    protected abstract void handle(AppendedEventMessage msg,
             T event);
 }

@@ -27,19 +27,19 @@ import org.geoint.canon.codec.EventCodecException;
  * A domain-defined occurrence.
  * <p>
  * EventMessage instances are wrappers around the an application domain-defined
- * event, providing event repository metadata and behavior.
+ * event associated with a domain entity.
  *
  * @author Steve Siebert <steve@t-3-solutions.com>
  */
 public interface EventMessage {
 
-    /**
-     * Event IDs that "triggered" (caused) this event.
-     *
-     * @return triggering event ids
-     */
-    String[] getTriggerIds();
 
+    /**
+     * Name of the stream where this event is published/committed.
+     *
+     * @return channel name
+     */
+    String getStreamName();
     /**
      * ID of the entity which authorized the event to be published.
      *
@@ -48,12 +48,12 @@ public interface EventMessage {
     String getAuthorizerId();
 
     /**
-     * Name of the stream where this event is published/committed.
+     * Event sequence identifiers that "triggered" (caused) this event.
      *
-     * @return channel name
+     * @return triggering event ids
      */
-    String getStreamName();
-
+    EventSequence[] getTriggerIds();
+    
     /**
      * Event type as defined by the application/domain.
      *

@@ -19,8 +19,8 @@ import java.io.Closeable;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.UnknownEventException;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * Sequential event reader.
@@ -45,7 +45,7 @@ public interface EventReader extends Closeable, AutoCloseable {
      * @throws StreamReadException thrown if there is a problem reading events
      * from the event stream
      */
-    Optional<CommittedEventMessage> poll() throws StreamReadException;
+    Optional<AppendedEventMessage> poll() throws StreamReadException;
 
     /**
      * Returns the next event in the stream, waiting up to the specified time
@@ -57,7 +57,7 @@ public interface EventReader extends Closeable, AutoCloseable {
      * @throws StreamReadException thrown if there is a problem reading events
      * @throws InterruptedException thrown if the blocked thread was interrupted
      */
-    Optional<CommittedEventMessage> poll(long timeout, TimeUnit unit)
+    Optional<AppendedEventMessage> poll(long timeout, TimeUnit unit)
             throws StreamReadException, InterruptedException;
 
     /**
@@ -68,7 +68,7 @@ public interface EventReader extends Closeable, AutoCloseable {
      * @throws TimeoutException thrown if the blocked thread was interrupted
      * @throws InterruptedException
      */
-    CommittedEventMessage take()
+    AppendedEventMessage take()
             throws StreamReadException, TimeoutException, InterruptedException;
 
     /**

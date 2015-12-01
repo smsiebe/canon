@@ -16,8 +16,8 @@
 package org.geoint.canon.replication;
 
 import java.util.Objects;
-import org.geoint.canon.event.CommittedEventMessage;
 import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * Published when two committed events have been deemed a collision and must be
@@ -28,11 +28,11 @@ import org.geoint.canon.event.EventMessage;
 public final class EventCollision {
 
     private final String streamName;
-    private final CommittedEventMessage first;
-    private final CommittedEventMessage second;
+    private final AppendedEventMessage first;
+    private final AppendedEventMessage second;
 
-    public EventCollision(String streamName, CommittedEventMessage first,
-            CommittedEventMessage second) {
+    public EventCollision(String streamName, AppendedEventMessage first,
+            AppendedEventMessage second) {
         this.streamName = streamName;
         this.first = first;
         this.second = second;

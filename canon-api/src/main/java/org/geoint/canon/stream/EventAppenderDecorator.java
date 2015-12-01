@@ -1,14 +1,9 @@
-package org.geoint.canon.impl.stream;
+package org.geoint.canon.stream;
 
 import java.util.concurrent.Future;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
-import org.geoint.canon.stream.EventAppender;
-import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.tx.EventTransactionException;
-import org.geoint.canon.tx.TransactionCommitted;
-import org.geoint.canon.tx.TransactionRolledBack;
 
 /**
  * Simple event appender decorator which delegates all events to the decorated
@@ -30,8 +25,8 @@ public abstract class EventAppenderDecorator implements EventAppender {
     }
 
     @Override
-    public EventAppender append(EventMessage message) throws StreamAppendException {
-        return appender.append(message);
+    public EventAppender add(EventMessage message) throws StreamAppendException {
+        return appender.add(message);
     }
 
     @Override
@@ -40,13 +35,9 @@ public abstract class EventAppenderDecorator implements EventAppender {
     }
 
     @Override
-    public Future<TransactionCommitted> commit() throws EventTransactionException {
-        return appender.commit();
+    public Future<EventsAppended> append() throws StreamAppendException {
+        return appender.append();
     }
 
-    @Override
-    public Future<TransactionRolledBack> rollback() throws EventTransactionException {
-        return appender.rollback();
-    }
 
 }

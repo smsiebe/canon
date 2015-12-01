@@ -16,12 +16,11 @@
 package org.geoint.canon.stream;
 
 import java.io.Closeable;
-import java.io.Flushable;
 import java.util.function.Predicate;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.event.CommittedEventMessage;
+import org.geoint.canon.event.AppendedEventMessage;
 
 /**
  * A readable view of sequential events on an {@link EventChannel}.
@@ -33,7 +32,7 @@ import org.geoint.canon.event.CommittedEventMessage;
  * @param <E> event message type
  */
 public interface EventStream<E extends EventMessage>
-        extends CodecResolver, Closeable, Flushable, AutoCloseable {
+        extends CodecResolver, Closeable {
 
     /**
      * Channel-unique name of the stream.
@@ -45,11 +44,11 @@ public interface EventStream<E extends EventMessage>
     String getName();
 
     /**
-     * Returns the last event id associated with the stream.
+     * The name of the channel of this stream.
      *
-     * @return the last event id associated with the stream
+     * @return channel name
      */
-    String getLastEventId();
+    String getChannelName();
 
     /**
      * Returns a new event reader for the stream.
@@ -73,7 +72,7 @@ public interface EventStream<E extends EventMessage>
      * @param handler
      * @param filter
      */
-    void addHandler(EventHandler handler, Predicate<CommittedEventMessage> filter);
+    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -92,7 +91,7 @@ public interface EventStream<E extends EventMessage>
      * @param filter
      * @param lastEventId
      */
-    void addHandler(EventHandler handler, Predicate<CommittedEventMessage> filter,
+    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
             String lastEventId);
 
     /**
@@ -103,27 +102,11 @@ public interface EventStream<E extends EventMessage>
     void removeHandler(EventHandler handler);
 
     /**
-     * Create a new transactional EventAppender which will append all events
-     * added to the tail of the stream.
+     * Create a new EventAppender to add new events to the stream.
      *
-     * @return transactional event appender
+     * @return event appender
      */
-    EventAppender appendToEnd();
-
-    /**
-     * Create a new transaction EventAppender which will attempt to append
-     * events after the specified event.
-     * <p>
-     * If the stream has advanced past the specified event id on commit the
-     * transaction will fail.
-     *
-     * @param previousEventId
-     * @return transactional event appender
-     * @throws AppendOutOfSequenceException thrown if the previous event id is
-     * not current event id
-     */
-    EventAppender appendAfter(String previousEventId)
-            throws AppendOutOfSequenceException;
+    EventAppender getAppender();
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.
@@ -134,20 +117,5 @@ public interface EventStream<E extends EventMessage>
      * @param codec
      */
     void useCodec(EventCodec<?> codec);
-
-    /**
-     * Determine if this stream implementation is offline capable.
-     *
-     * @return true if offline capable, otherwise false
-     */
-    boolean isOfflineable();
-
-    /**
-     *
-     *
-     * @param offline if true makes offline capable, if false remove offline
-     * capability if not intrinsic
-     */
-    void setOffline(boolean offline);
 
 }

@@ -1,6 +1,6 @@
 package org.geoint.canon.impl.stream;
 
-import java.io.IOException;
+import org.geoint.canon.stream.EventAppenderDecorator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -10,14 +10,11 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.concurrent.FutureWatcher;
-import org.geoint.canon.impl.stream.file.FileStreamProvider;
-import org.geoint.canon.spi.stream.EventStreamProvider;
-import org.geoint.canon.stream.AppendOutOfSequenceException;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
-import org.geoint.canon.tx.EventTransactionException;
-import org.geoint.canon.tx.TransactionCommitted;
+import org.geoint.canon.stream.EventsAppended;
+import org.geoint.canon.stream.StreamAppendException;
 
 /**
  * Implements common event stream methods requiring event stream implementations
@@ -27,12 +24,9 @@ import org.geoint.canon.tx.TransactionCommitted;
  */
 public abstract class AbstractEventStream implements EventStream {
 
-    protected volatile String lastEventId;
     protected final String streamName;
     protected final HierarchicalCodecResolver streamCodecs;
     protected final Map<String, String> streamProperties;
-    private final EventStreamProvider offlineStreamProvider;
-    private EventStream offlineStream;
 
     private static final Logger LOGGER
             = Logger.getLogger(EventStream.class.getPackage().getName());
@@ -42,49 +36,14 @@ public abstract class AbstractEventStream implements EventStream {
      * @param streamName
      * @param streamProperties
      * @param codecs
-     * @param offline
      */
     public AbstractEventStream(String streamName,
             Map<String, String> streamProperties,
-            CodecResolver codecs,
-            boolean offline) {
-        this(streamName, streamProperties, codecs, null, offline);
-    }
-
-    /**
-     *
-     * @param streamName
-     * @param streamProperties
-     * @param codecs
-     * @param offlineStreamProvider if null uses a file stream provider
-     * @param offline
-     */
-    public AbstractEventStream(String streamName,
-            Map<String, String> streamProperties,
-            CodecResolver codecs,
-            EventStreamProvider offlineStreamProvider,
-            boolean offline) {
+            CodecResolver codecs) {
         this.streamName = streamName;
         this.streamProperties = streamProperties;
         this.streamCodecs = new HierarchicalCodecResolver(codecs);
-        this.offlineStreamProvider = (offlineStreamProvider != null)
-                ? offlineStreamProvider
-                : getDefaultOfflineStreamProvider();
-        if (offline) {
-            createOffline();
-        }
-    }
 
-    @Override
-    public boolean isOfflineable() {
-        return offlineStream != null;
-    }
-
-    @Override
-    public void setOffline(boolean offline) {
-        if (offlineStream == null) {
-            createOffline();
-        }
     }
 
     @Override
@@ -98,31 +57,12 @@ public abstract class AbstractEventStream implements EventStream {
     }
 
     @Override
-    public EventAppender appendToEnd() {
+    public EventAppender getAppender() {
         /*
          * decorates the stream with a TrackingEventAppender to keep the 
          * lasteventid accurate
          */
         return new TrackingEventAppender(newAppender());
-    }
-
-    @Override
-    public EventAppender appendAfter(String previousEventId)
-            throws AppendOutOfSequenceException {
-        if (!lastEventId.contentEquals(previousEventId)) {
-            //eliminate the need to wait until transaction commit if the 
-            //stream is already advanced past the requested position
-            throw new AppendOutOfSequenceException(streamName, String.format(
-                    "Unable to append an event after %s, stream is currently "
-                    + "positioned at %s", previousEventId, lastEventId));
-        }
-        /*
-         * decorates the stream with a TrackingPositionedEventAppender to 
-         * ensure the events are only committed if the lasteventid is the same 
-         * as the one the appender was created with AND to keep the 
-         * lasteventid accurate
-         */
-        return new TrackingPositionedEventAppender(previousEventId, newAppender());
     }
 
     @Override
@@ -160,39 +100,19 @@ public abstract class AbstractEventStream implements EventStream {
         return streamCodecs.getCodec(eventType);
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
-
-    @Override
-    public void flush() throws IOException {
-
-    }
-
-    protected final void createOffline() {
-
-    }
-
-    private String getOfflineStreamName() {
-        return String.format("org.canon.offline.%s" + streamName);
-    }
-
-    private static EventStreamProvider getDefaultOfflineStreamProvider() {
-        return new FileStreamProvider();
-    }
 
     /**
-     * Returns a new event appender for the stream.
+     * Returns a new stream appender.
      * <p>
-     * The appender needs only to append to the tail of the stream, the
-     * decorators used by this implementation will ensure the events are
-     * sequenced properly.
+     * The appender needs to ensure ACID compliant transactions but need not
+     * worry about inter-transaction sequence integrity, which is managed by the
+     * appender decorators used by this implementation.
      *
      * @return returns a new appender that writes an event to the tail of the
      * stream
      */
     protected abstract EventAppender newAppender();
+
 
     private class TrackingEventAppender extends EventAppenderDecorator {
 
@@ -201,9 +121,9 @@ public abstract class AbstractEventStream implements EventStream {
         }
 
         @Override
-        public Future<TransactionCommitted> commit()
-                throws EventTransactionException {
-            Future<TransactionCommitted> result = super.commit();
+        public Future<EventsAppended> append()
+                throws StreamAppendException {
+            Future<EventsAppended> result = super.append();
             //asynchrnously update the last event id when the append operation 
             //completes
             FutureWatcher.INSTANCE.onSuccess(result, (r) -> lastEventId = r.getLastEventId());
@@ -230,6 +150,15 @@ public abstract class AbstractEventStream implements EventStream {
             this.previousEventId = previousEventId;
         }
 
+        @Override
+        public Future<EventsAppended> commit() 
+                throws EventTransactionException {
+
+            
+            super.commit();
+        }
+
+        
     }
 
 //    @Override
