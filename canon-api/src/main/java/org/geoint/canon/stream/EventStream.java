@@ -21,6 +21,7 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.AppendedEventMessage;
+import org.geoint.canon.event.EventSequence;
 
 /**
  * A readable view of sequential events on an {@link EventChannel}.
@@ -79,9 +80,9 @@ public interface EventStream<E extends EventMessage>
      * stream, starting at the specified event.
      *
      * @param handler
-     * @param lastEventId
+     * @param sequence
      */
-    void addHandler(EventHandler handler, String lastEventId);
+    void addHandler(EventHandler handler, EventSequence sequence);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -89,10 +90,10 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      * @param filter
-     * @param lastEventId
+     * @param sequence
      */
     void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
-            String lastEventId);
+            EventSequence sequence);
 
     /**
      * Removes the handler from the stream.

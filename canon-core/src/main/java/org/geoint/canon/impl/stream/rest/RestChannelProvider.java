@@ -1,6 +1,6 @@
 package org.geoint.canon.impl.stream.rest;
 
-import org.geoint.canon.spi.stream.EventStreamProvider;
+import org.geoint.canon.spi.stream.EventChannelProvider;
 
 /**
  * Creates event streams that are remotely accessible over the Canon REST
@@ -8,6 +8,6 @@ import org.geoint.canon.spi.stream.EventStreamProvider;
  *
  * @author steve_siebert
  */
-public class RestStreamProvider implements EventStreamProvider {
+public class RestChannelProvider implements EventChannelProvider {
 
 }

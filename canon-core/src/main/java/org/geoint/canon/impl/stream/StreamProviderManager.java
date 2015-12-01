@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
-import org.geoint.canon.spi.stream.EventStreamProvider;
+import org.geoint.canon.spi.stream.EventChannelProvider;
 
 /**
- * Discovers and initializes EventStreamProvider instances and provides
- * EventStream resolution convenience methods.
+ * Discovers and initializes EventChannelProvider instances and provides
+ EventStream resolution convenience methods.
  *
  * @author steve_siebert
  */
@@ -20,10 +20,10 @@ public class StreamProviderManager {
             = getInstance(StreamProviderManager.class.getClassLoader());
 
     //used as synchronized lock to manage providers and lookup new streams
-    private final Map<String, EventStreamProvider> streamProviders;
-    private final ServiceLoader<EventStreamProvider> streamProviderLoader;
+    private final Map<String, EventChannelProvider> streamProviders;
+    private final ServiceLoader<EventChannelProvider> streamProviderLoader;
 
-    private StreamProviderManager(ServiceLoader<EventStreamProvider> loader) {
+    private StreamProviderManager(ServiceLoader<EventChannelProvider> loader) {
         this.streamProviderLoader = loader;
         //load all stream providers available on the classpath
         streamProviders = new HashMap<>();
@@ -36,10 +36,10 @@ public class StreamProviderManager {
 
     public static StreamProviderManager getInstance(ClassLoader classloader) {
         return new StreamProviderManager(
-                ServiceLoader.load(EventStreamProvider.class, classloader));
+                ServiceLoader.load(EventChannelProvider.class, classloader));
     }
 
-    public Optional<EventStreamProvider> findProvider(String scheme) {
+    public Optional<EventChannelProvider> findProvider(String scheme) {
         if (!streamProviders.containsKey(scheme)) {
             //reload providers if the scheme is not available
             reloadProviders();
@@ -48,7 +48,7 @@ public class StreamProviderManager {
         return Optional.ofNullable(streamProviders.get(scheme));
     }
 
-    public Optional<EventStreamProvider> findProvider(URI streamUri) {
+    public Optional<EventChannelProvider> findProvider(URI streamUri) {
         return findProvider(streamUri.getScheme());
     }
 
@@ -69,7 +69,7 @@ public class StreamProviderManager {
      * NOTE: This method intentionally implements the {@link Consumer}
      * functional interface.
      */
-    private void registerStreamProvider(EventStreamProvider streamProvider) {
+    private void registerStreamProvider(EventChannelProvider streamProvider) {
         synchronized (streamProviders) {
             streamProviders.putIfAbsent(streamProvider.getScheme(), streamProvider);
         }

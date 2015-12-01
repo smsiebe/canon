@@ -1,4 +1,4 @@
-package org.geoint.canon.impl.stream;
+package org.geoint.canon.impl.stream.memory;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -11,6 +11,7 @@ import org.geoint.canon.tx.EventTransactionException;
 import org.geoint.canon.stream.EventsAppended;
 import org.geoint.canon.tx.TransactionRolledBack;
 import org.geoint.canon.event.AppendedEventMessage;
+import org.geoint.canon.impl.stream.AbstractEventAppender;
 
 /**
  * Appender which keeps the events to be committed on heap (in memory) until the

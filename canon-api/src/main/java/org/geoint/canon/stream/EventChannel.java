@@ -21,5 +21,5 @@ public interface EventChannel {
      *
      * @return streams of the channel
      */
-    Collection<EventStream> getStream();
+    Collection<EventStream> getStreams();
 }

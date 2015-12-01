@@ -33,13 +33,20 @@ import org.geoint.canon.codec.EventCodecException;
  */
 public interface EventMessage {
 
+    /**
+     * Name of the event channel.
+     *
+     * @return channel name
+     */
+    String getChannelName();
 
     /**
      * Name of the stream where this event is published/committed.
      *
-     * @return channel name
+     * @return stream name
      */
     String getStreamName();
+
     /**
      * ID of the entity which authorized the event to be published.
      *
@@ -53,7 +60,7 @@ public interface EventMessage {
      * @return triggering event ids
      */
     EventSequence[] getTriggerIds();
-    
+
     /**
      * Event type as defined by the application/domain.
      *

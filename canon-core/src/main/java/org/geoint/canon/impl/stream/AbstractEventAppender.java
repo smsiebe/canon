@@ -2,14 +2,12 @@ package org.geoint.canon.impl.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,12 +18,10 @@ import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.codec.PipedEventEncoder;
-import org.geoint.canon.impl.concurrent.CompletedFuture;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.stream.EventsAppended;
-import org.geoint.canon.event.AppendedEventMessage;
+import org.geoint.canon.event.EventSequence;
 
 /**
  * Provides default method implementations for basic appender capabilities,
@@ -36,21 +32,12 @@ import org.geoint.canon.event.AppendedEventMessage;
 public abstract class AbstractEventAppender implements EventAppender {
 
     protected final EventStream stream;
-    protected final EventTransaction tx;
     protected final HierarchicalCodecResolver codecs;
 
     private final Logger LOGGER = Logger.getLogger(EventAppender.class.getName());
 
     public AbstractEventAppender(EventStream stream) {
         this.stream = stream;
-        this.tx = new DefaultEventTransaction(this::doCommit, this::doRollback);
-        this.codecs = new HierarchicalCodecResolver(stream);
-    }
-
-    public AbstractEventAppender(EventStream stream,
-            EventTransactionFactory txFactory) {
-        this.stream = stream;
-        this.tx = txFactory.newTransaction();
         this.codecs = new HierarchicalCodecResolver(stream);
     }
 
@@ -59,28 +46,7 @@ public abstract class AbstractEventAppender implements EventAppender {
             throws StreamAppendException {
         AppendingEventMessageBuilder mb
                 = new AppendingEventMessageBuilder(eventType);
-        this.append(mb);
         return mb;
-    }
-
-    @Override
-    public EventAppender append(EventMessage message)
-            throws StreamAppendException {
-        synchronized (tx) {
-            if (!tx.isActive()) {
-                throw new StreamAppendException(stream.getName(), "Unable to append "
-                        + "event, transaction is not active.");
-            }
-
-            if (!codecs.getCodec(message.getEventType()).isPresent()) {
-                throw new StreamAppendException(stream.getName(), String.format(
-                        "Unable to serialize event type '%s', no codec found",
-                        message.getEventType()));
-            }
-
-            addToTransaction(message);
-        }
-        return this;
     }
 
     @Override
@@ -89,78 +55,16 @@ public abstract class AbstractEventAppender implements EventAppender {
         return this;
     }
 
-    @Override
-    public Future<EventsAppended> commit()
-            throws EventTransactionException {
-        synchronized (tx) {
-            if (!tx.isActive()) {
-                if (tx.isCommitted()) {
-                    return CompletedFuture.completed((EventsAppended) tx.getResult());
-                }
-
-                throw new EventTransactionException(String.format("Unable to commit "
-                        + "transaction %s on stream %s, transaction is not "
-                        + "active.", tx.getId(), stream.getName()));
-            }
-
-            //commit transaction, which in turn calls doCommit
-            return tx.commit();
-        }
-    }
-
-    @Override
-    public Future<TransactionRolledBack> rollback()
-            throws EventTransactionException {
-        synchronized (tx) {
-            if (!tx.isActive()) {
-                if (tx.isRollback()) {
-                    return CompletedFuture.completed((TransactionRolledBack) tx.getResult());
-                }
-
-                throw new EventTransactionException(String.format("Unable to "
-                        + "rollback transaction %s on stream %s, transaction is "
-                        + "not active.", tx.getId(), stream.getName()));
-            }
-
-            //rollback transaction, which in turn calls doRollback
-            return tx.rollback();
-        }
-    }
-
     /**
-     * Adds the event to the sequence of events that will be appended upon
-     * commit.
-     *
-     * @param event
-     */
-    protected abstract void addToTransaction(EventMessage event);
-
-    /**
-     * Appends events to the stream.
-     *
-     * @return
-     * @throws StreamAppendException
-     */
-    protected abstract Collection<AppendedEventMessage> doCommit()
-            throws StreamAppendException;
-
-    /**
-     * Rolls back any events associated with the transaction.
-     *
-     * @throws StreamAppendException
-     */
-    protected abstract void doRollback() throws StreamAppendException;
-
-    /**
-     * Event message exposing the buildable interface with the ability of being
-     * added to the appender event sequence.
+     * Buildable event message which adds itself to the appender upon addition
+     * of the event content.
      */
     private class AppendingEventMessageBuilder
             implements EventMessageBuilder, EventMessage {
 
         private final String eventType;
         private String authorizedBy;
-        private final Set<String> triggeredBy;
+        private final Set<EventSequence> triggeredBy;
         private final Map<String, String> headers;
         private Supplier<InputStream> eventContent;
 
@@ -171,14 +75,19 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
+        public String getChannelName() {
+            return stream.getChannelName();
+        }
+
+        @Override
         public EventMessageBuilder authorizedBy(String authorizerId) {
             this.authorizedBy = authorizerId;
             return this;
         }
 
         @Override
-        public EventMessageBuilder triggeredBy(String eventId) {
-            this.triggeredBy.add(eventId);
+        public EventMessageBuilder triggeredBy(EventSequence sequence) {
+            this.triggeredBy.add(sequence);
             return this;
         }
 
@@ -194,13 +103,14 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
-        public void event(Object event) throws EventCodecException {
+        public void event(Object event)
+                throws EventCodecException, StreamAppendException {
             event(event, codecs.getCodec(eventType).get());
         }
 
         @Override
         public void event(final Object event, EventCodec<?> codec)
-                throws EventCodecException {
+                throws EventCodecException, StreamAppendException {
             final EventCodec encodingCodec;
             if (codec == null) {
                 Optional<EventCodec> c = codecs.getCodec(eventType);
@@ -216,7 +126,7 @@ public abstract class AbstractEventAppender implements EventAppender {
                         encodingCodec.getClass().getCanonicalName(),
                         eventType));
             }
-            
+
             this.eventContent = () -> {
                 try {
                     return new PipedEventEncoder(encodingCodec).encode(event);
@@ -227,11 +137,13 @@ public abstract class AbstractEventAppender implements EventAppender {
                     return new ExceptionalInputStream(ex);
                 }
             };
+
+            add(this);
         }
 
         @Override
-        public String[] getTriggerIds() {
-            return triggeredBy.toArray(new String[triggeredBy.size()]);
+        public EventSequence[] getTriggerIds() {
+            return triggeredBy.toArray(new EventSequence[triggeredBy.size()]);
         }
 
         @Override
@@ -270,7 +182,7 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
-        public <E> E getEvent(EventCodec<E> codec) 
+        public <E> E getEvent(EventCodec<E> codec)
                 throws IOException, EventCodecException {
             return codec.decode(this);
         }

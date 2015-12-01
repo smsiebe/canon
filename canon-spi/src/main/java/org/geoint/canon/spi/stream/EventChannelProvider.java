@@ -1,8 +1,7 @@
 package org.geoint.canon.spi.stream;
 
 import java.util.Map;
-import org.geoint.canon.codec.CodecResolver;
-import org.geoint.canon.stream.EventStream;
+import org.geoint.canon.stream.EventChannel;
 
 /**
  * Creates an EventStream for a specific transport type as defined by the scheme
@@ -10,7 +9,7 @@ import org.geoint.canon.stream.EventStream;
  *
  * @author steve_siebert
  */
-public interface EventStreamProvider {
+public interface EventChannelProvider {
 
     /**
      * Indicates if this provider can create streams for the user-defined stream
@@ -21,18 +20,15 @@ public interface EventStreamProvider {
     String getScheme();
 
     /**
-     * Returns the requested event stream.
+     * Returns the requested event channel.
      *
-     * @param streamName name of the stream to create
-     * @param streamProperties properties of the event stream
-     * @param codecs codecs available to the stream
-     * @return event stream
+     * @param channelName name of the channel to create
+     * @param channelProperties properties of the event channel
+     * @return event channel
      * @throws UnableToResolveStreamException thrown if the provider could not
      * resolve the stream as requested
      */
-    EventStream getStream(String streamName,
-            Map<String, String> streamProperties,
-            CodecResolver codecs)
+    EventChannel getChannel(String channelName, Map<String, String> channelProperties)
             throws UnableToResolveStreamException;
 
 }
