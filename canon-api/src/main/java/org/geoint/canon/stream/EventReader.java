@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.event.AppendedEventMessage;
+import org.geoint.canon.event.EventSequence;
 
 /**
  * Sequential event reader.
@@ -72,13 +73,13 @@ public interface EventReader extends Closeable, AutoCloseable {
             throws StreamReadException, TimeoutException, InterruptedException;
 
     /**
-     * Set the readers in the event sequence position by event Id.
+     * Set the readers position.
      *
-     * @param eventId event id
+     * @param sequence event sequence
      * @throws UnknownEventException thrown if the provided event id is not
      * known to the underlying channel
      */
-    void setPositionByEventId(String eventId) throws UnknownEventException;
+    void setPosition(EventSequence sequence) throws UnknownEventException;
 
     /**
      * Return the source stream.

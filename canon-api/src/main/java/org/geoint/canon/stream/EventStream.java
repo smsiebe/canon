@@ -22,6 +22,7 @@ import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.AppendedEventMessage;
 import org.geoint.canon.event.EventSequence;
+import org.geoint.canon.event.UnknownEventException;
 
 /**
  * A readable view of sequential events on an {@link EventChannel}.
@@ -56,7 +57,7 @@ public interface EventStream<E extends EventMessage>
      *
      * @return new event reader
      */
-    EventReader getReader();
+    EventReader newReader();
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -81,8 +82,10 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      * @param sequence
+     * @throws UnknownEventException
      */
-    void addHandler(EventHandler handler, EventSequence sequence);
+    void addHandler(EventHandler handler, EventSequence sequence)
+            throws UnknownEventException;
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -91,9 +94,18 @@ public interface EventStream<E extends EventMessage>
      * @param handler
      * @param filter
      * @param sequence
+     * @throws UnknownEventException
      */
     void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
-            EventSequence sequence);
+            EventSequence sequence) throws UnknownEventException;
+
+    /**
+     * Registers an event handler with the reader it uses to retrieve events.
+     *
+     * @param handler
+     * @param reader
+     */
+    void addHandler(EventHandler handler, EventReader reader);
 
     /**
      * Removes the handler from the stream.
@@ -107,7 +119,7 @@ public interface EventStream<E extends EventMessage>
      *
      * @return event appender
      */
-    EventAppender getAppender();
+    EventAppender newAppender();
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.

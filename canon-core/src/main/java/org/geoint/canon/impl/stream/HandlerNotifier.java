@@ -23,6 +23,7 @@ public class HandlerNotifier implements Runnable {
     private long RETRY_DELAY;
     private final static long DEFAULT_RETRY_DELAY = 3000L;
     
+
     private final Logger LOGGER
             = Logger.getLogger(HandlerNotifier.class.getName());
 
@@ -31,8 +32,8 @@ public class HandlerNotifier implements Runnable {
         this.handler = handler;
         this.RETRY_DELAY = DEFAULT_RETRY_DELAY;
     }
-    
-    public void setRetryDelay (long retryDelay, TimeUnit unit) {
+
+    public void setRetryDelay(long retryDelay, TimeUnit unit) {
         //intentionally didn't synchronize, it doesn't matter
         RETRY_DELAY = unit.toMillis(retryDelay);
     }
@@ -108,6 +109,11 @@ public class HandlerNotifier implements Runnable {
                     + "on stream %s", handler.getClass().getCanonicalName(),
                     eventReader.getStream().toString()));
         }
+    }
+
+    void stop() {
+        this.keepRunning = false;
+        t
     }
 
 }

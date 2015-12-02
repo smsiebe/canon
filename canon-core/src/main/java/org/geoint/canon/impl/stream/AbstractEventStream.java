@@ -5,14 +5,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.EventSequence;
+import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventReader;
+import org.geoint.canon.stream.FilteredEventReader;
 
 /**
  * Implements common event stream methods requiring event stream implementations
@@ -25,7 +28,7 @@ public abstract class AbstractEventStream implements EventStream {
     protected final String streamName;
     protected final HierarchicalCodecResolver streamCodecs;
     protected final Map<String, String> streamProperties;
-    protected final Map<EventHandler, HandlerNotifier> handlers;
+    protected final Map<EventHandler, Future> handlers;
     protected final ExecutorService executor;
 
     private static final Logger LOGGER
@@ -55,25 +58,32 @@ public abstract class AbstractEventStream implements EventStream {
 
     @Override
     public void addHandler(EventHandler handler) {
-
+        //use a default reader, starting at zero
+        addHandler(handler, newReader());
     }
 
     @Override
     public void addHandler(EventHandler handler, Predicate filter) {
-
+        addHandler(handler, new FilteredEventReader(newReader(), filter));
     }
 
     @Override
-    public void addHandler(EventHandler handler, EventSequence sequence) {
-
+    public void addHandler(EventHandler handler, EventSequence sequence)
+            throws UnknownEventException {
+        EventReader reader = newReader();
+        reader.setPosition(sequence);
+        addHandler(handler, reader);
     }
 
     @Override
     public void addHandler(EventHandler handler, Predicate filter,
-            EventSequence sequence) {
-
+            EventSequence sequence) throws UnknownEventException {
+        EventReader reader = newReader();
+        reader.setPosition(sequence);
+        addHandler(handler, new FilteredEventReader(reader, filter));
     }
 
+    @Override
     public void addHandler(EventHandler handler, EventReader reader) {
 
         synchronized (handlers) {
@@ -82,14 +92,22 @@ public abstract class AbstractEventStream implements EventStream {
             }
 
             HandlerNotifier notifier = new HandlerNotifier(reader, handler);
-            handlers.put(handler, notifier);
-            executor.s
+            handlers.put(handler, executor.submit(notifier));
         }
-        
+
     }
 
     @Override
     public void removeHandler(EventHandler handler) {
+        HandlerNotifier notifier = null;
+        synchronized (handlers) {
+             notifier = handlers.remove(handler);
+        }
+            
+        if (notifier != null) {
+            //shutdown notifier
+            notifier.stop();
+        }
     }
 
     @Override

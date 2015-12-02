@@ -34,8 +34,7 @@ public abstract class EventReaderDecorator implements EventReader {
 
     private static final long THREAD_WAIT_MILLS = 10L;
 
-    public EventReaderDecorator(EventReader reader)
-            throws StreamReadException {
+    public EventReaderDecorator(EventReader reader) {
         this.reader = reader;
     }
 
@@ -103,9 +102,9 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws UnknownEventException
      */
     @Override
-    public void setPositionByEventId(String eventId) throws UnknownEventException {
+    public void setPosition(String eventId) throws UnknownEventException {
         this.currentEventId = eventId;
-        reader.setPositionByEventId(eventId);
+        reader.setPosition(eventId);
     }
 
     /**
