@@ -16,6 +16,7 @@
 package org.geoint.canon.stream;
 
 import java.io.Closeable;
+import java.util.Collection;
 import java.util.function.Predicate;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
@@ -64,8 +65,9 @@ public interface EventStream<E extends EventMessage>
      * stream, starting at the first event in the stream.
      *
      * @param handler
+     * @return handler resource
      */
-    void addHandler(EventHandler handler);
+    HandlerNotifier addHandler(EventHandler handler);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -73,8 +75,9 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      * @param filter
+     * @return handler resource
      */
-    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
+    HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -82,9 +85,10 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      * @param sequence
+     * @return handler resource
      * @throws UnknownEventException
      */
-    void addHandler(EventHandler handler, EventSequence sequence)
+    HandlerNotifier addHandler(EventHandler handler, EventSequence sequence)
             throws UnknownEventException;
 
     /**
@@ -94,9 +98,10 @@ public interface EventStream<E extends EventMessage>
      * @param handler
      * @param filter
      * @param sequence
+     * @return handler resource
      * @throws UnknownEventException
      */
-    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
+    HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
             EventSequence sequence) throws UnknownEventException;
 
     /**
@@ -104,15 +109,19 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler
      * @param reader
+     * @return handler resource
      */
-    void addHandler(EventHandler handler, EventReader reader);
+    HandlerNotifier addHandler(EventHandler handler, EventReader reader);
 
     /**
-     * Removes the handler from the stream.
+     * List the handlers currently registered to the stream.
+     * <p>
+     * Returned handler resources are not backed by an internal collection,
+     * changes to the collection will not be reflected.  
      *
-     * @param handler
+     * @return collection of handlers registered with the stream
      */
-    void removeHandler(EventHandler handler);
+    Collection<HandlerNotifier> listHandlers();
 
     /**
      * Create a new EventAppender to add new events to the stream.
