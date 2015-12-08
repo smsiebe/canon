@@ -1,20 +1,16 @@
 package org.geoint.canon.impl.stream.memory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.AppendedEventMessage;
 import org.geoint.canon.event.EventMessage;
@@ -24,7 +20,6 @@ import org.geoint.canon.impl.stream.AbstractEventAppender;
 import org.geoint.canon.impl.stream.AbstractEventStream;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventReader;
-import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.event.EventsAppended;
 import org.geoint.canon.stream.StreamAppendException;
 import org.geoint.canon.stream.StreamReadException;
@@ -41,7 +36,7 @@ public class HeapEventStream extends AbstractEventStream {
 
     //messages on heap
     private final List<AppendedEventMessage> messages;
-    //message sychronization lock
+    //message collection lock and synchronizer for wait/notify of messages
     private final ReentrantReadWriteLock msgLock = new ReentrantReadWriteLock();
 
     public HeapEventStream(String channelName, String streamName,
@@ -113,50 +108,120 @@ public class HeapEventStream extends AbstractEventStream {
 
     }
 
+    /**
+     * Reader of an in-memory event stream.
+     */
     private class MemoryEventReader implements EventReader {
 
+        private volatile int currentIndex;
+        private String currentSequence;
+        
         @Override
         public boolean hasNext() {
-Lock lock = msgLock.readLock();
+            Lock lock = msgLock.readLock();
 
-        
             try {
-        lock.lock();
-        }finally {
-        lock.unlock();
-        }
+                lock.lock();
+                return messages.size() > (currentIndex + 1);
+            } finally {
+                lock.unlock();
+            }
         }
 
         @Override
         public Optional<AppendedEventMessage> poll() throws StreamReadException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            Lock lock = msgLock.readLock();
+
+            try {
+                lock.lock();
+                try {
+                    AppendedEventMessage msg = messages.get(currentIndex + 1);
+                    currentIndex++;
+                    currentSequence = msg.getSequence();
+                    return Optional.of(msg);
+                } catch (IndexOutOfBoundsException ex) {
+                    return Optional.empty();
+                }
+            } finally {
+                lock.unlock();
+            }
         }
 
         @Override
-        public Optional<AppendedEventMessage> poll(long timeout, TimeUnit unit) throws StreamReadException, InterruptedException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        public Optional<AppendedEventMessage> poll(final long timeout,
+                TimeUnit unit) throws StreamReadException, InterruptedException {
+            Lock lock = msgLock.readLock();
+            try {
+                lock.lock();
+                Optional<AppendedEventMessage> msg = poll();
+
+                if (msg.isPresent()) {
+                    return msg;
+                }
+
+                //no message, wait on message synchronizer
+                synchronized (msgLock) {
+                    msgLock.wait(unit.toMillis(timeout));
+                }
+
+                return poll();
+            } finally {
+                lock.unlock();
+            }
+
         }
 
         @Override
-        public AppendedEventMessage take() throws StreamReadException, TimeoutException, InterruptedException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        @SuppressWarnings("SleepWhileInLoop")
+        public AppendedEventMessage take()
+                throws StreamReadException, InterruptedException {
+
+            Lock lock = msgLock.readLock();
+
+            try {
+                lock.lock();
+                Optional<AppendedEventMessage> msg = poll();
+
+                if (msg.isPresent()) {
+                    return msg.get();
+                }
+
+                //no message, wait on message synchronizer
+                synchronized (msgLock) {
+                    msgLock.wait();
+                }
+
+                return poll().orElse(null);
+            } finally {
+                lock.unlock();
+            }
         }
 
         @Override
         public void setPosition(String sequence) throws UnknownEventException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            Lock lock = msgLock.writeLock();
+            try {
+                lock.lock();
+                
+            } finally {
+                lock.unlock();
+            }
         }
 
         @Override
-        public EventStream getStream() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        public String getPosition() {
+            Lock lock = msgLock.readLock();
+            try {
+                lock.lock();
+                return currentSequence;
+            } finally {
+                lock.unlock();
+            }
         }
 
         @Override
-        public void close() throws IOException {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        public void close()  {
         }
 
-        
     }
 }

@@ -22,7 +22,7 @@ import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.codec.PipedEventEncoder;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.impl.event.EventSequence;
+import org.geoint.canon.spi.stream.EventSequence;
 
 /**
  * Provides default method implementations for basic appender capabilities,

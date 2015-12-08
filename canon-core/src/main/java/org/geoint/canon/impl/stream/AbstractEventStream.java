@@ -1,6 +1,6 @@
 package org.geoint.canon.impl.stream;
 
-import org.geoint.canon.impl.event.EventSequencer;
+import org.geoint.canon.spi.stream.EventSequencer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -21,10 +21,9 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.event.AppendedEventMessage;
-import org.geoint.canon.impl.event.EventSequence;
+import org.geoint.canon.spi.stream.EventSequence;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
-import org.geoint.canon.impl.event.SimpleIncrementSequencer;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventHandlerAction;
@@ -333,7 +332,7 @@ public abstract class AbstractEventStream implements EventStream {
         @Override
         public void run() {
             LOGGER.log(Level.FINE, () -> "Initializing handler notifier on stream "
-                    + eventReader.getStream().toString());
+                    + eventReader.getStreamName());
             state = NotifierState.RUNNING;
 
             while (!state.equals(NotifierState.STOPPED)) {

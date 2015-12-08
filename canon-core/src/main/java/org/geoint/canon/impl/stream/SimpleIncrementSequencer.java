@@ -1,5 +1,6 @@
-package org.geoint.canon.impl.event;
+package org.geoint.canon.impl.stream;
 
+import org.geoint.canon.spi.stream.EventSequencer;
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicLong;
 import org.geoint.canon.event.EventMessage;

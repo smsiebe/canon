@@ -18,7 +18,6 @@ package org.geoint.canon.stream;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.event.AppendedEventMessage;
 
@@ -35,6 +34,16 @@ public abstract class EventReaderDecorator implements EventReader {
 
     public EventReaderDecorator(EventReader reader) {
         this.reader = reader;
+    }
+
+    @Override
+    public String getChannelName() {
+        return reader.getChannelName();
+    }
+
+    @Override
+    public String getStreamName() {
+        return reader.getStreamName();
     }
 
     /**
@@ -81,13 +90,12 @@ public abstract class EventReaderDecorator implements EventReader {
      *
      * @return
      * @throws StreamReadException
-     * @throws TimeoutException
      * @throws InterruptedException
      */
     @Override
     @SuppressWarnings("SleepWhileInLoop")
     public AppendedEventMessage take()
-            throws StreamReadException, TimeoutException, InterruptedException {
+            throws StreamReadException, InterruptedException {
         Optional<AppendedEventMessage> event = null;
         while (!(event = this.poll()).isPresent()) {
             Thread.sleep(THREAD_WAIT_MILLS);
@@ -114,16 +122,6 @@ public abstract class EventReaderDecorator implements EventReader {
     @Override
     public String getPosition() {
         return reader.getPosition();
-    }
-
-    /**
-     * Default implementation delegates call to decorated reader.
-     *
-     * @return
-     */
-    @Override
-    public EventStream getStream() {
-        return reader.getStream();
     }
 
     /**

@@ -30,6 +30,18 @@ import org.geoint.canon.event.AppendedEventMessage;
 public interface EventReader extends Closeable, AutoCloseable {
 
     /**
+     * 
+     * @return name of the channel
+     */
+    String getChannelName();
+    
+    /**
+     * 
+     * @return name of the stream
+     */
+    String getStreamName();
+    
+    /**
      * Checks if there is a sequential event available after the readers current
      * position.
      *
@@ -65,11 +77,10 @@ public interface EventReader extends Closeable, AutoCloseable {
      *
      * @return next event in the stream
      * @throws StreamReadException thrown if there is a problem reading events
-     * @throws TimeoutException thrown if the blocked thread was interrupted
      * @throws InterruptedException
      */
     AppendedEventMessage take()
-            throws StreamReadException, TimeoutException, InterruptedException;
+            throws StreamReadException, InterruptedException;
 
     /**
      * Set the readers position.
@@ -82,15 +93,9 @@ public interface EventReader extends Closeable, AutoCloseable {
 
     /**
      * Returns the current position of the reader.
-     * 
+     *
      * @return current position of the reader
      */
     String getPosition();
-    
-    /**
-     * Return the source stream.
-     *
-     * @return source event stream
-     */
-    EventStream getStream();
+
 }

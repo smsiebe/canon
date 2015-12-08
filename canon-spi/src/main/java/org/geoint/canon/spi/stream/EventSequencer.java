@@ -1,15 +1,14 @@
-package org.geoint.canon.impl.event;
+package org.geoint.canon.spi.stream;
 
 import java.util.Comparator;
 import org.geoint.canon.event.EventMessage;
-import org.geoint.canon.impl.stream.AbstractEventAppender;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.StreamAppendException;
 
 /**
- * An EventSequencer is used by the {@link AbstractEventAppender} to determine
- * if an {@link EventMessage} can be appended to the stream, and if so, generate
- * it's unique {@link EventSequence}.
+ * An EventSequencer is used to determine if an {@link EventMessage} can be
+ * appended to the stream, and if so, generate it's unique
+ * {@link EventSequence}.
  * <p>
  * EventSequencer implementations must be thread safe.
  *

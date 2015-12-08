@@ -53,6 +53,12 @@ public interface EventStream<E extends EventMessage>
     String getChannelName();
 
     /**
+     * The current/last appended sequence of the stream.
+     * @return 
+     */
+    String getCurrentSequence();
+    
+    /**
      * Returns a new event reader for the stream.
      *
      * @return new event reader

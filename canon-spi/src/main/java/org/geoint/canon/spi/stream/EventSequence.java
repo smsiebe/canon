@@ -1,4 +1,4 @@
-package org.geoint.canon.impl.event;
+package org.geoint.canon.spi.stream;
 
 /**
  * Sequence of an event within a stream.
