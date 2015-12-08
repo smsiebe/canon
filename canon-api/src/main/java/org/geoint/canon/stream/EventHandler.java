@@ -55,7 +55,7 @@ public interface EventHandler {
         LOGGER.log(Level.WARNING,
                 String.format("Unable to handle event %s of type %s,"
                         + " removing handler.",
-                        event.getSequence().asString(),
+                        event.getSequence(),
                         event.getEventType()), ex);
         return EventHandlerAction.FAIL;
     }

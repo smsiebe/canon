@@ -59,7 +59,7 @@ public interface EventMessage {
      *
      * @return triggering event ids
      */
-    EventSequence[] getTriggerIds();
+    String[] getTriggerIds();
 
     /**
      * Event type as defined by the application/domain.

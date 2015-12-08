@@ -31,7 +31,7 @@ public interface EventMessageBuilder {
      * Reference to the creator/publisher of the event.
      *
      * @param authorizerId
-     * @return
+     * @return this builder (fluid interface)
      */
     EventMessageBuilder authorizedBy(String authorizerId);
 
@@ -39,10 +39,18 @@ public interface EventMessageBuilder {
      * Optional event id which caused indicates an event which caused this event
      * to be created.
      *
-     * @param eventSequence
-     * @return
+     * @param eventSequence sequence of the event which triggered this event
+     * @return this builder (fluid interface)
      */
-    EventMessageBuilder triggeredBy(EventSequence eventSequence);
+    EventMessageBuilder triggeredBy(String eventSequence);
+
+    /**
+     * Optional - event which triggered this event.
+     *
+     * @param event triggering event
+     * @return this builder (fluid interface)
+     */
+    EventMessageBuilder triggeredBy(AppendedEventMessage event);
 
     /**
      * Adds an optional event message header to the event.
@@ -54,7 +62,7 @@ public interface EventMessageBuilder {
      *
      * @param name
      * @param value
-     * @return
+     * @return this builder (fluid interface)
      */
     EventMessageBuilder header(String name, String value);
 
@@ -66,6 +74,7 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event
+     * @throws StreamAppendException
      */
     void event(InputStream event) throws StreamAppendException;
 
@@ -82,6 +91,7 @@ public interface EventMessageBuilder {
      * @param event
      * @throws EventCodecException thrown if no codec could be found or the
      * discovered codec could not be used to encode this object type
+     * @throws StreamAppendException
      *
      */
     void event(Object event) throws EventCodecException, StreamAppendException;
@@ -98,7 +108,8 @@ public interface EventMessageBuilder {
      * @param codec
      * @throws EventCodecException thrown if the codec is invalid or could not
      * be used to encode this object type
+     * @throws StreamAppendException
      */
-    void event(Object event, EventCodec<?> codec) 
+    void event(Object event, EventCodec<?> codec)
             throws EventCodecException, StreamAppendException;
 }

@@ -8,12 +8,12 @@ package org.geoint.canon.event;
 public interface AppendedEventMessage extends EventMessage {
 
     /**
-     * Universally unique ID of the appended event message.
-     * 
+     * Stream-unique event sequence identifier of the appended event message.
+     *
      * @return event message identity
      */
-    EventSequence getSequence();
-    
+    String getSequence();
+
     /**
      * Length of the event content byte stream.
      *

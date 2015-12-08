@@ -36,7 +36,7 @@ import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.stream.StreamProviderManager;
 import org.geoint.canon.impl.stream.file.FileChannelProvider;
-import org.geoint.canon.impl.stream.memory.MemoryStreamProvider;
+import org.geoint.canon.impl.stream.memory.MemoryChannelProvider;
 import org.geoint.canon.spi.stream.UnableToResolveStreamException;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventStream;
@@ -129,7 +129,7 @@ public class Canon {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
                 "canon-" + UUID.randomUUID().toString());
 
-        return new Canon(tmpDir, new MemoryStreamProvider());
+        return new Canon(tmpDir, new MemoryChannelProvider());
     }
 
     /**

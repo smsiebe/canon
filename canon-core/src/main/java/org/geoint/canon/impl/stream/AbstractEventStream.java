@@ -1,5 +1,6 @@
 package org.geoint.canon.impl.stream;
 
+import org.geoint.canon.impl.event.EventSequencer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -8,10 +9,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
@@ -22,10 +21,10 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.event.AppendedEventMessage;
-import org.geoint.canon.event.EventMessage;
-import org.geoint.canon.event.EventSequence;
+import org.geoint.canon.impl.event.EventSequence;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
+import org.geoint.canon.impl.event.SimpleIncrementSequencer;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventHandlerAction;
@@ -47,9 +46,11 @@ public abstract class AbstractEventStream implements EventStream {
         RUNNING, PAUSED, STOPPED
     }
 
+    protected final String channelName;
     protected final String streamName;
     protected final Map<String, String> streamProperties;
     protected final HierarchicalCodecResolver streamCodecs;
+    protected final EventSequencer sequencer;
     private final Set<HandlerNotifierImpl> notifiers;
     //each notifier is executed asynchronously
     private final ExecutorService notifierExecutor;
@@ -59,19 +60,59 @@ public abstract class AbstractEventStream implements EventStream {
 
     /**
      *
+     * @param channelName
      * @param streamName
      * @param streamProperties
      * @param codecs
      * @param executor
      */
-    public AbstractEventStream(String streamName,
+    public AbstractEventStream(String channelName, String streamName,
             Map<String, String> streamProperties,
             CodecResolver codecs, ExecutorService executor) {
+        this(channelName, streamName,
+                streamProperties,
+                codecs,
+                new SimpleIncrementSequencer(),
+                executor);
+    }
+
+    public AbstractEventStream(String channelName, String streamName,
+            Map<String, String> streamProperties,
+            ExecutorService notifierExecutor) {
+        this(channelName, streamName, streamProperties,
+                new HierarchicalCodecResolver(),
+                new SimpleIncrementSequencer(),
+                notifierExecutor);
+    }
+
+    public AbstractEventStream(String channelName,
+            String streamName,
+            Map<String, String> streamProperties,
+            EventSequencer sequencer,
+            ExecutorService notifierExecutor) {
+        this(channelName, streamName, streamProperties,
+                new HierarchicalCodecResolver(),
+                sequencer,
+                notifierExecutor);
+    }
+
+    public AbstractEventStream(String channelName, String streamName,
+            Map<String, String> streamProperties,
+            CodecResolver codecs,
+            EventSequencer sequencer,
+            ExecutorService notifierExecutor) {
+        this.channelName = channelName;
         this.streamName = streamName;
         this.streamProperties = streamProperties;
         this.streamCodecs = new HierarchicalCodecResolver(codecs);
+        this.sequencer = sequencer;
         this.notifiers = new HashSet<>();
-        this.notifierExecutor = executor;
+        this.notifierExecutor = notifierExecutor;
+    }
+
+    @Override
+    public String getChannelName() {
+        return channelName;
     }
 
     @Override
@@ -91,7 +132,7 @@ public abstract class AbstractEventStream implements EventStream {
     }
 
     @Override
-    public HandlerNotifier addHandler(EventHandler handler, EventSequence sequence)
+    public HandlerNotifier addHandler(EventHandler handler, String sequence)
             throws UnknownEventException {
         EventReader reader = newReader();
         reader.setPosition(sequence);
@@ -100,7 +141,7 @@ public abstract class AbstractEventStream implements EventStream {
 
     @Override
     public HandlerNotifier addHandler(EventHandler handler, Predicate filter,
-            EventSequence sequence) throws UnknownEventException {
+            String sequence) throws UnknownEventException {
         EventReader reader = newReader();
         reader.setPosition(sequence);
         return addHandler(handler, new FilteredEventReader(reader, filter));
@@ -143,40 +184,65 @@ public abstract class AbstractEventStream implements EventStream {
     }
 
     /**
-     * EventReader used by the HandlerNotifierImpl which provides a method to
-     * inject a "poison pill", used to shutdown the handler notifier.
+     * Subclasses must call {@code super.close()} to prevent resource leakage.
+     *
+     * @throws IOException
+     */
+    @Override
+    public void close() throws IOException {
+        //shut down notifiers
+        notifiers.stream().forEach(HandlerNotifierImpl::stop);
+
+        /*
+         * humans are silly
+         * and if a reference is made
+         * an island is formed
+         */
+        notifiers.clear();
+
+        //shutdown notifier executor
+        notifierExecutor.shutdown();
+    }
+
+    /**
+     * EventReader used by the HandlerNotifierImpl which provides methods to
+     * inject "poison pill" events used to manage the state of the asynchronous
+     * notifier.
      */
     private class DopeableEventReader extends EventReaderDecorator {
 
-        private volatile NotifierState state;
+        //intentionally did not synchronize...the performance hit vs the 
+        //benefit isn't worth it.  Event without synchronization, we're still 
+        //thread-safe
+        private PoisonPillMessage pill;
 
         public DopeableEventReader(EventReader reader) {
             super(reader);
-            state = NotifierState.RUNNING;
         }
 
         @Override
         public Optional<AppendedEventMessage> poll() throws StreamReadException {
-            switch (state) {
-                case STOPPED:
-                    return Optional.of(new ShutdownReaderEventMessage());
-                    break;
-                case PAUSED:
-                    
-                    break;
-                case RUNNING:
-                    return reader.poll();
-                default:
-                    throw new StreamReadException(channelName, streamName, 
-                            String.format("Unknown stream state %s", state.name()));
+            if (pill != null) {
+                try {
+                    return Optional.of(pill);
+                } finally {
+                    pill = null;
+                }
             }
-            
+            return reader.poll();
         }
 
-        public void stop() {
-            state = NotifierState.STOPPED;
+        void stop() {
+            pill = new ShutdownNotifierEventMessage();
         }
 
+        void pause() {
+            pill = new PauseNotifierEventMessage();
+        }
+
+        void resume() {
+            pill = new ResumeNotifierEventMessage();
+        }
     }
 
     /**
@@ -196,7 +262,7 @@ public abstract class AbstractEventStream implements EventStream {
      */
     private class HandlerNotifierImpl implements HandlerNotifier, Runnable {
 
-        private final EventReader eventReader;
+        private final DopeableEventReader eventReader;
         private final EventHandler handler;
         private volatile NotifierState state;
         private long RETRY_DELAY;
@@ -206,7 +272,7 @@ public abstract class AbstractEventStream implements EventStream {
                 = Logger.getLogger(HandlerNotifier.class.getName());
 
         public HandlerNotifierImpl(EventReader eventReader, EventHandler handler) {
-            this.eventReader = eventReader;
+            this.eventReader = new DopeableEventReader(eventReader);
             this.handler = handler;
             this.RETRY_DELAY = DEFAULT_RETRY_DELAY;
         }
@@ -217,6 +283,54 @@ public abstract class AbstractEventStream implements EventStream {
         }
 
         @Override
+        public void pause() throws IllegalStateException {
+            switch (state) {
+                case RUNNING:
+                    eventReader.pause(); //add poison pill
+                    break;
+                case STOPPED:
+                    throw new IllegalStateException("Stopped handler cannot be "
+                            + "paused.");
+            }
+        }
+
+        @Override
+        public void restart() throws IllegalStateException {
+            switch (state) {
+                case PAUSED:
+                    eventReader.resume(); //add poison pill
+                    break;
+                case STOPPED:
+                    throw new IllegalStateException("Stopped handler cannot be "
+                            + "resumed.");
+            }
+        }
+
+        @Override
+        public void stop() {
+            if (state.equals(NotifierState.STOPPED)) {
+                return;
+            }
+
+            eventReader.stop(); //add poison pill
+        }
+
+        @Override
+        public boolean isRunning() {
+            return state.equals(NotifierState.RUNNING);
+        }
+
+        @Override
+        public boolean isStopped() {
+            return state.equals(NotifierState.STOPPED);
+        }
+
+        @Override
+        public boolean isPaused() {
+            return state.equals(NotifierState.PAUSED);
+        }
+
+        @Override
         public void run() {
             LOGGER.log(Level.FINE, () -> "Initializing handler notifier on stream "
                     + eventReader.getStream().toString());
@@ -224,8 +338,45 @@ public abstract class AbstractEventStream implements EventStream {
 
             while (!state.equals(NotifierState.STOPPED)) {
                 try {
-
                     AppendedEventMessage msg = eventReader.take();
+
+                    //handle poison pill
+                    if (msg instanceof PoisonPillMessage) {
+
+                        if (msg instanceof ShutdownNotifierEventMessage) {
+                            LOGGER.log(Level.FINEST, "Shutdown poison pill "
+                                    + "received, shutting down handler.");
+                            break; //break out of processing loop
+                        }
+
+                        if (state.equals(NotifierState.RUNNING)
+                                && msg instanceof PauseNotifierEventMessage) {
+                            LOGGER.log(Level.FINE, String.format("Pausing "
+                                    + "handler %s",
+                                    handler.getClass().getCanonicalName())
+                            );
+                            state = NotifierState.PAUSED;
+                            continue; //poison message is eaten
+                        } else if (state.equals(NotifierState.PAUSED)
+                                && msg instanceof ResumeNotifierEventMessage) {
+                            LOGGER.log(Level.FINE, String.format("Resuming "
+                                    + "handler %s",
+                                    handler.getClass().getCanonicalName())
+                            );
+                            state = NotifierState.RUNNING;
+                            continue; //poison message is eaten
+                        }
+
+                        LOGGER.log(Level.WARNING, String.format("Attempt to "
+                                + "change notifier '%s' state from %s with pill"
+                                + " %s has failed; swollowing pill.",
+                                handler.getClass().getCanonicalName(),
+                                state.name(),
+                                msg.getClass().getName()));
+                        continue; //poison message is eaten
+                    }
+
+                    //not a posion pill, handle event
                     try {
                         handler.handle(msg);
                     } catch (Exception ex) {
@@ -240,7 +391,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "skipping event.",
                                         handler.getClass().getCanonicalName(),
                                         eventReader.getStream().toString(),
-                                        msg.getSequence().asString()));
+                                        msg.getSequence()));
                                 break;
                             case RETRY:
                                 LOGGER.log(Level.FINER, String.format("Handler %s "
@@ -248,7 +399,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "retrying event.",
                                         handler.getClass().getCanonicalName(),
                                         eventReader.getStream().toString(),
-                                        msg.getSequence().asString()));
+                                        msg.getSequence()));
                                 Thread.sleep(RETRY_DELAY);
                                 break;
                             case FAIL:
@@ -257,7 +408,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "shutting down handler.",
                                         handler.getClass().getCanonicalName(),
                                         eventReader.getStream().toString(),
-                                        msg.getSequence().asString()));
+                                        msg.getSequence()));
                                 state = NotifierState.STOPPED;
                                 break;
                             default:
@@ -329,65 +480,77 @@ public abstract class AbstractEventStream implements EventStream {
      */
     private class PoisonPillMessage implements AppendedEventMessage {
 
-        /* */
         @Override
-        public EventSequence getSequence() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public String getSequence() {
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public int getEventLength() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public String getChannelName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public String getStreamName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public String getAuthorizerId() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
-        public EventSequence[] getTriggerIds() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public String[] getTriggerIds() {
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public String getEventType() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public Map<String, String> getHeaders() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public Optional<String> findHeader(String headerName) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public String getHeader(String headerName, Supplier<String> defaultValue) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
         public InputStream getEventContent() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
         @Override
-        public <E> E getEvent(EventCodec<E> codec) throws IOException, EventCodecException {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public <E> E getEvent(EventCodec<E> codec)
+                throws IOException, EventCodecException {
+            throw new UnsupportedOperationException("PoisonPillMessage is not "
+                    + "a valid EventMessage.");
         }
 
     }
@@ -404,6 +567,13 @@ public abstract class AbstractEventStream implements EventStream {
      * Pauses the HandlerNotifierImpl.
      */
     private class PauseNotifierEventMessage extends PoisonPillMessage {
+
+    }
+
+    /**
+     * Resumes a HandlerNotifierImpl.
+     */
+    private class ResumeNotifierEventMessage extends PoisonPillMessage {
 
     }
 

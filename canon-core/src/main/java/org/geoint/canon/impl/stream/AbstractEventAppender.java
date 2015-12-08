@@ -12,16 +12,17 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecNotFoundException;
+import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
+import org.geoint.canon.event.AppendedEventMessage;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.codec.PipedEventEncoder;
 import org.geoint.canon.stream.EventAppender;
-import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.event.EventSequence;
+import org.geoint.canon.impl.event.EventSequence;
 
 /**
  * Provides default method implementations for basic appender capabilities,
@@ -31,14 +32,17 @@ import org.geoint.canon.event.EventSequence;
  */
 public abstract class AbstractEventAppender implements EventAppender {
 
-    protected final EventStream stream;
+    protected final String channelName;
+    protected final String streamName;
     protected final HierarchicalCodecResolver codecs;
 
     private final Logger LOGGER = Logger.getLogger(EventAppender.class.getName());
 
-    public AbstractEventAppender(EventStream stream) {
-        this.stream = stream;
-        this.codecs = new HierarchicalCodecResolver(stream);
+    public AbstractEventAppender(String channelName, String streamName,
+            CodecResolver codecs) {
+        this.channelName = channelName;
+        this.streamName = streamName;
+        this.codecs = new HierarchicalCodecResolver(codecs);
     }
 
     @Override
@@ -64,7 +68,7 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         private final String eventType;
         private String authorizedBy;
-        private final Set<EventSequence> triggeredBy;
+        private final Set<String> triggeredBy;
         private final Map<String, String> headers;
         private Supplier<InputStream> eventContent;
 
@@ -76,7 +80,7 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         @Override
         public String getChannelName() {
-            return stream.getChannelName();
+            return channelName;
         }
 
         @Override
@@ -86,8 +90,14 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
-        public EventMessageBuilder triggeredBy(EventSequence sequence) {
+        public EventMessageBuilder triggeredBy(String sequence) {
             this.triggeredBy.add(sequence);
+            return this;
+        }
+
+        @Override
+        public EventMessageBuilder triggeredBy(AppendedEventMessage msg) {
+            this.triggeredBy.add(msg.getSequence());
             return this;
         }
 
@@ -142,8 +152,8 @@ public abstract class AbstractEventAppender implements EventAppender {
         }
 
         @Override
-        public EventSequence[] getTriggerIds() {
-            return triggeredBy.toArray(new EventSequence[triggeredBy.size()]);
+        public String[] getTriggerIds() {
+            return triggeredBy.toArray(new String[triggeredBy.size()]);
         }
 
         @Override
@@ -153,7 +163,7 @@ public abstract class AbstractEventAppender implements EventAppender {
 
         @Override
         public String getStreamName() {
-            return stream.getName();
+            return streamName;
         }
 
         @Override

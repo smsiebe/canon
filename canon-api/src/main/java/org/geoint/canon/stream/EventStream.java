@@ -22,7 +22,6 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.AppendedEventMessage;
-import org.geoint.canon.event.EventSequence;
 import org.geoint.canon.event.UnknownEventException;
 
 /**
@@ -88,7 +87,7 @@ public interface EventStream<E extends EventMessage>
      * @return handler resource
      * @throws UnknownEventException
      */
-    HandlerNotifier addHandler(EventHandler handler, EventSequence sequence)
+    HandlerNotifier addHandler(EventHandler handler, String sequence)
             throws UnknownEventException;
 
     /**
@@ -102,7 +101,7 @@ public interface EventStream<E extends EventMessage>
      * @throws UnknownEventException
      */
     HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
-            EventSequence sequence) throws UnknownEventException;
+            String sequence) throws UnknownEventException;
 
     /**
      * Registers an event handler with the reader it uses to retrieve events.
@@ -117,7 +116,7 @@ public interface EventStream<E extends EventMessage>
      * List the handlers currently registered to the stream.
      * <p>
      * Returned handler resources are not backed by an internal collection,
-     * changes to the collection will not be reflected.  
+     * changes to the collection will not be reflected.
      *
      * @return collection of handlers registered with the stream
      */

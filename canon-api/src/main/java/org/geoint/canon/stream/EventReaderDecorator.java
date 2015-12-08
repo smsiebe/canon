@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.event.AppendedEventMessage;
-import org.geoint.canon.event.EventSequence;
 
 /**
  * Decorates an EventReader.
@@ -31,7 +30,6 @@ import org.geoint.canon.event.EventSequence;
 public abstract class EventReaderDecorator implements EventReader {
 
     protected final EventReader reader;
-    protected EventSequence currentSequence;
 
     private static final long THREAD_WAIT_MILLS = 10L;
 
@@ -87,6 +85,7 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws InterruptedException
      */
     @Override
+    @SuppressWarnings("SleepWhileInLoop")
     public AppendedEventMessage take()
             throws StreamReadException, TimeoutException, InterruptedException {
         Optional<AppendedEventMessage> event = null;
@@ -103,9 +102,18 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws UnknownEventException
      */
     @Override
-    public void setPosition(EventSequence sequence) throws UnknownEventException {
-        this.currentSequence = sequence;
+    public void setPosition(String sequence) throws UnknownEventException {
         reader.setPosition(sequence);
+    }
+
+    /**
+     * Default implementation delegates call to decorated reader.
+     *
+     * @return current reader position
+     */
+    @Override
+    public String getPosition() {
+        return reader.getPosition();
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.geoint.canon.stream;
 
+import org.geoint.canon.stream.event.EventsAppended;
 import java.util.concurrent.Future;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.EventMessage;

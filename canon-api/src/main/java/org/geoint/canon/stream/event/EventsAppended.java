@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.stream;
+package org.geoint.canon.stream.event;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.geoint.canon.event.AppendedEventMessage;
 
 /**
- * Event providing details about an append operation on a stream.
+ * Canon stream event providing details about an append operation on a stream.
  *
  * @author steve_siebert
  */
@@ -34,8 +33,7 @@ public final class EventsAppended {
     private final ZonedDateTime appendTime;
     private final Collection<AppendedEventMessage> messages;
 
-    public EventsAppended(String streamName,
-            ZonedDateTime commitTime, AppendedEventMessage... messages) {
+    public EventsAppended(String streamName, AppendedEventMessage... messages) {
         this.streamName = streamName;
         this.appendTime = ZonedDateTime.now(ZoneOffset.UTC);
 

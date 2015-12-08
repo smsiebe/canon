@@ -18,6 +18,9 @@ public interface EventChannel {
 
     /**
      * Retrieve the streams of this channel.
+     * <p>
+     * Modifications to the returned collection will not change the channel
+     * state.
      *
      * @return streams of the channel
      */
