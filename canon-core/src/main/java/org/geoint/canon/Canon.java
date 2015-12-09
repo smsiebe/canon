@@ -31,16 +31,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.stream.StreamProviderManager;
-import org.geoint.canon.impl.stream.file.FileChannelProvider;
 import org.geoint.canon.impl.stream.memory.MemoryChannelProvider;
 import org.geoint.canon.spi.stream.UnableToResolveStreamException;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventStream;
-import org.geoint.canon.stream.StreamAlreadyExistsException;
 import org.geoint.canon.spi.stream.EventChannelProvider;
 
 /**
@@ -50,9 +47,8 @@ import org.geoint.canon.spi.stream.EventChannelProvider;
  */
 public class Canon {
 
-    private final File baseDir;
     private final HierarchicalCodecResolver codecs;
-    private final Map<String, EventStream> streams = new HashMap<>();
+    private final Map<String, EventChannelProvider> channelProviders = new HashMap<>();
     private final EventChannelProvider defaultProvider;
     private final StreamProviderManager streamProviders
             = StreamProviderManager.getDefaultInstance();
@@ -63,14 +59,9 @@ public class Canon {
 
     private static final Logger LOGGER = Logger.getLogger(Canon.class.getName());
 
-    private Canon(File baseDir, EventChannelProvider defaultProvider) {
+    private Canon(EventChannelProvider defaultProvider) {
         this.codecs = new HierarchicalCodecResolver();
-        this.baseDir = baseDir;
         this.defaultProvider = defaultProvider;
-
-        DEFAULT_STREAM_PROPERTIES = new HashMap<>(1);
-        DEFAULT_STREAM_PROPERTIES.put(CANON_BASE_DIR_PROPERTY,
-                baseDir.getAbsolutePath());
     }
 
     /**

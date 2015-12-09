@@ -33,8 +33,18 @@ public class SimpleIncrementSequencer implements EventSequencer {
     }
 
     @Override
+    public EventSequencer fork() {
+        return new SimpleIncrementSequencer(increment.get());
+    }
+
+    @Override
     public String next(EventMessage msg) throws StreamAppendException {
         return String.valueOf(increment.incrementAndGet());
+    }
+
+    @Override
+    public String getCurrentSequence() {
+        return String.valueOf(increment.get());
     }
 
     @Override

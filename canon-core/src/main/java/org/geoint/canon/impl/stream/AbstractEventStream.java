@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -21,7 +20,6 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.event.AppendedEventMessage;
-import org.geoint.canon.spi.stream.EventSequence;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.stream.EventStream;
@@ -117,6 +115,11 @@ public abstract class AbstractEventStream implements EventStream {
     @Override
     public String getName() {
         return streamName;
+    }
+
+    @Override
+    public String getCurrentSequence() {
+        return sequencer.getCurrentSequence();
     }
 
     @Override
@@ -389,7 +392,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "on stream %s failed to process event %s, "
                                         + "skipping event.",
                                         handler.getClass().getCanonicalName(),
-                                        eventReader.getStream().toString(),
+                                        eventReader.getStreamName(),
                                         msg.getSequence()));
                                 break;
                             case RETRY:
@@ -397,7 +400,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "on stream %s failed to process event %s, "
                                         + "retrying event.",
                                         handler.getClass().getCanonicalName(),
-                                        eventReader.getStream().toString(),
+                                        eventReader.getStreamName(),
                                         msg.getSequence()));
                                 Thread.sleep(RETRY_DELAY);
                                 break;
@@ -406,7 +409,7 @@ public abstract class AbstractEventStream implements EventStream {
                                         + "on stream %s failed to process event %s, "
                                         + "shutting down handler.",
                                         handler.getClass().getCanonicalName(),
-                                        eventReader.getStream().toString(),
+                                        eventReader.getStreamName(),
                                         msg.getSequence()));
                                 state = NotifierState.STOPPED;
                                 break;
@@ -416,7 +419,7 @@ public abstract class AbstractEventStream implements EventStream {
                         }
                     }
 
-                } catch (InterruptedException | TimeoutException ex) {
+                } catch (InterruptedException ex) {
                     Thread.currentThread().isInterrupted();
                     //pass through to keepRunning check
                 } catch (StreamReadException ex) {
@@ -424,7 +427,7 @@ public abstract class AbstractEventStream implements EventStream {
                     LOGGER.log(Level.FINE, String.format("Handler %s could not read "
                             + "from stream %s, retrying after delay.",
                             handler.getClass().getCanonicalName(),
-                            eventReader.getStream().toString()), ex);
+                            eventReader.getStreamName()), ex);
                     try {
                         Thread.currentThread().sleep(RETRY_DELAY);
                     } catch (InterruptedException ex1) {
@@ -435,7 +438,7 @@ public abstract class AbstractEventStream implements EventStream {
 
                 LOGGER.log(Level.FINE, String.format("Shutting down handler %s "
                         + "on stream %s", handler.getClass().getCanonicalName(),
-                        eventReader.getStream().toString()));
+                        eventReader.getStreamName()));
             }
         }
 

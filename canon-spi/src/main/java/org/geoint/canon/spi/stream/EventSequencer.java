@@ -6,7 +6,7 @@ import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.StreamAppendException;
 
 /**
- * An EventSequencer is used to determine if an {@link EventMessage} can be
+ * An EventSequencer is used to keep track of {@link EventMessage} can be
  * appended to the stream, and if so, generate it's unique
  * {@link EventSequence}.
  * <p>
@@ -31,6 +31,20 @@ public interface EventSequencer {
      * @throws StreamAppendException thrown if the message cannot be appended
      */
     String next(EventMessage msg) throws StreamAppendException;
+
+    /**
+     * Creates a fork of the event sequencer.
+     *
+     * @return a fork of the event sequencer
+     */
+    EventSequencer fork();
+
+    /**
+     * Return the current sequence.
+     *
+     * @return current sequence
+     */
+    String getCurrentSequence();
 
     /**
      * Return a thread-safe Comparator that can compare the sequences generated

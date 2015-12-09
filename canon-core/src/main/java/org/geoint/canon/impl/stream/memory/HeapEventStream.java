@@ -115,7 +115,7 @@ public class HeapEventStream extends AbstractEventStream {
 
         private volatile int currentIndex;
         private String currentSequence;
-        
+
         @Override
         public boolean hasNext() {
             Lock lock = msgLock.readLock();
@@ -202,7 +202,7 @@ public class HeapEventStream extends AbstractEventStream {
             Lock lock = msgLock.writeLock();
             try {
                 lock.lock();
-                
+
             } finally {
                 lock.unlock();
             }
@@ -220,7 +220,17 @@ public class HeapEventStream extends AbstractEventStream {
         }
 
         @Override
-        public void close()  {
+        public void close() {
+        }
+
+        @Override
+        public String getChannelName() {
+            return channelName;
+        }
+
+        @Override
+        public String getStreamName() {
+            return streamName;
         }
 
     }

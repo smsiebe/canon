@@ -1,4 +1,4 @@
-package org.geoint.canon.impl.stream.rest;
+package org.geoint.canon.stream.rest;
 
 import org.geoint.canon.spi.stream.EventChannelProvider;
 

@@ -12,12 +12,13 @@ import org.geoint.canon.stream.EventChannel;
 public interface EventChannelProvider {
 
     /**
-     * Indicates if this provider can create streams for the user-defined stream
-     * URI scheme.
+     * Determines if this provider can instantiate a channel.
      *
+     * @param scheme
+     * @param channelProperties
      * @return unique stream "scheme" name supported by this provider
      */
-    String getScheme();
+    boolean provides(String scheme, Map<String, String> channelProperties);
 
     /**
      * Returns the requested event channel.

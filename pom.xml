@@ -12,6 +12,8 @@
         <module>canon-server</module>
         <module>canon-client</module>
         <module>canon-replication</module>
+        <module>canon-file-stream</module>
+        <module>canon-rest-stream</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

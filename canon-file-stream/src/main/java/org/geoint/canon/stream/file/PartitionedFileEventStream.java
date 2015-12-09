@@ -1,4 +1,4 @@
-package org.geoint.canon.impl.stream.file;
+package org.geoint.canon.stream.file;
 
 import java.io.File;
 import java.io.IOException;
