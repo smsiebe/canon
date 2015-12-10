@@ -9,20 +9,20 @@ import org.geoint.canon.event.EventException;
  *
  * @author steve_siebert
  */
-public class UnableToResolveStreamException extends EventException {
+public class UnableToResolveChannelException extends EventException {
 
-    public UnableToResolveStreamException() {
+    public UnableToResolveChannelException() {
     }
 
-    public UnableToResolveStreamException(String message) {
+    public UnableToResolveChannelException(String message) {
         super(message);
     }
 
-    public UnableToResolveStreamException(String message, Throwable cause) {
+    public UnableToResolveChannelException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public UnableToResolveStreamException(Throwable cause) {
+    public UnableToResolveChannelException(Throwable cause) {
         super(cause);
     }
 

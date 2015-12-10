@@ -2,7 +2,7 @@ package org.geoint.canon.impl.stream.memory;
 
 import java.util.Map;
 import org.geoint.canon.codec.CodecResolver;
-import org.geoint.canon.spi.stream.UnableToResolveStreamException;
+import org.geoint.canon.spi.stream.UnableToResolveChannelException;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.spi.stream.EventChannelProvider;
 import org.geoint.canon.stream.EventChannel;
@@ -26,7 +26,7 @@ public class MemoryChannelProvider implements EventChannelProvider {
     @Override
     public EventChannel getChannel(String channelName,
             Map<String, String> channelProperties) 
-            throws UnableToResolveStreamException {
+            throws UnableToResolveChannelException {
         return new HeapEventChannel(channelName, channelProperties);
     }
 

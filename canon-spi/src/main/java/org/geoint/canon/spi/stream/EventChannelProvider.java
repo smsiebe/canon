@@ -21,15 +21,15 @@ public interface EventChannelProvider {
     boolean provides(String scheme, Map<String, String> channelProperties);
 
     /**
-     * Returns the requested event channel.
+     * Returns the requested event channel, creating the channel if necessary.
      *
      * @param channelName name of the channel to create
      * @param channelProperties properties of the event channel
      * @return event channel
-     * @throws UnableToResolveStreamException thrown if the provider could not
+     * @throws UnableToResolveChannelException thrown if the provider could not
      * resolve the stream as requested
      */
     EventChannel getChannel(String channelName, Map<String, String> channelProperties)
-            throws UnableToResolveStreamException;
+            throws UnableToResolveChannelException;
 
 }
