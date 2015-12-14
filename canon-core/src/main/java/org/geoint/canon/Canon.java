@@ -20,20 +20,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.impl.codec.HierarchicalCodecResolver;
 import org.geoint.canon.impl.stream.ChannelProviderManager;
-import org.geoint.canon.impl.stream.memory.MemoryChannelProvider;
 import org.geoint.canon.spi.stream.UnableToResolveChannelException;
 import org.geoint.canon.stream.EventHandler;
 import org.geoint.canon.stream.EventStream;
 import org.geoint.canon.spi.stream.EventChannelProvider;
 import org.geoint.canon.stream.EventChannel;
+import org.geoint.canon.stream.StreamReadException;
 
 /**
  * A Canon event database instance.
@@ -42,43 +43,83 @@ import org.geoint.canon.stream.EventChannel;
  */
 public class Canon {
 
-    private static final ChannelProviderManager channelProviders
-            = ChannelProviderManager.getDefaultInstance();
-
+    private final ChannelProviderManager channelProviders;
+    private final EventStream adminStream;
     private final HierarchicalCodecResolver codecs;
-    private final Map<String, EventChannel> channels = new HashMap<>();
-    private final EventChannelProvider adminProvider;
-    private static Map<String, String> DEFAULT_STREAM_PROPERTIES;
+    private final Map<String, EventChannel> channels; //key is channel name
 
-    private static final String INSTANCE_ADMIN_STREAM_NAME = "canon.admin";
-    private static final String CANON_BASE_DIR_PROPERTY = "canonBaseDir";
-
+    private static final String ADMIN_STREAM_NAME = "canon.admin";
+    private static final String DEFAULT_ADMIN_URI = "mem://" + ADMIN_STREAM_NAME;
     private static final Logger LOGGER = Logger.getLogger(Canon.class.getName());
 
-    private Canon(EventChannelProvider adminProvider) {
+    private Canon(EventStream adminStream, ChannelProviderManager providers) {
+        channelProviders = providers;
         this.codecs = new HierarchicalCodecResolver();
-        this.adminProvider = adminProvider;
+        this.adminStream = adminStream;
+        this.channels = new HashMap<>();
     }
 
     /**
-     * Creates a new Canon using the provided channel provider for the admin
+     * Creates a new Canon instance using the default in-memory channel provider
+     * as the admin provider.
+     *
+     * @return
+     * @throws StreamReadException
+     * @throws UnableToResolveChannelException
+     */
+    public static Canon newInstance()
+            throws StreamReadException, UnableToResolveChannelException {
+
+        return newInstance(DEFAULT_ADMIN_URI);
+    }
+
+    /**
+     * Creates a new Canon instance using the provided admin URI.
+     *
+     * @param adminUri
+     * @return
+     * @throws StreamReadException
+     * @throws UnableToResolveChannelException
+     */
+    public static Canon newInstance(String adminUri)
+            throws StreamReadException, UnableToResolveChannelException {
+        return newInstance(adminUri,
+                ChannelProviderManager.getDefaultInstance());
+    }
+
+    /**
+     * Creates a new Canon instance using the provided channel provider for the
+     * admin channel and the provided loader to load additional providers.
+     *
+     * @param adminUri
+     * @param channelLoader
+     * @return
+     * @throws StreamReadException
+     * @throws UnableToResolveChannelException
+     */
+    public static Canon newInstance(String adminUri, ClassLoader channelLoader)
+            throws StreamReadException, UnableToResolveChannelException {
+        return newInstance(adminUri,
+                ChannelProviderManager.getInstance(channelLoader));
+    }
+
+    /**
+     * Creates the canon instance using the provider manager to load the admin
      * channel.
+     * <p>
+     * This method is intentionally private to prevent public exposure of the
+     * ChannelProviderManager class.
      *
-     * @param adminprovider
+     * @param adminUri
+     * @param providerManager
      * @return
+     * @throws StreamReadException
+     * @throws UnableToResolveChannelException
      */
-    public static Canon newInstance(EventChannelProvider adminprovider) {
-        return new Canon(adminprovider);
-    }
-
-    /**
-     * Creates a new Canon instance with an in-memory channel provider as the
-     * admin provider.
-     *
-     * @return
-     */
-    public static Canon newInstance() {
-        return new Canon(new MemoryChannelProvider());
+    private static Canon newInstance(String adminUri,
+            ChannelProviderManager providerManager)
+            throws StreamReadException, UnableToResolveChannelException {
+        return new Canon(getStream(adminUri, providerManager), providerManager);
     }
 
     /**
@@ -99,12 +140,7 @@ public class Canon {
      * not be resolved
      */
     public EventStream getAdminStream() throws UnableToResolveChannelException {
-        try {
-            return getOrCreateDefaultStream(INSTANCE_ADMIN_STREAM_NAME);
-        } catch (UnableToResolveChannelException ex) {
-            LOGGER.log(Level.SEVERE, "Unable to create admin stream", ex);
-            throw ex;
-        }
+        return adminStream;
     }
 
     /**
@@ -114,7 +150,7 @@ public class Canon {
      * returned collection will not change any Canon state
      */
     public Collection<EventChannel> getChannels() {
-        return new ArrayList(channels.values());
+        return Collections.unmodifiableCollection(channels.values());
     }
 
     /**
@@ -133,43 +169,25 @@ public class Canon {
      * @param scheme channel provider scheme
      * @param channelName name of channel
      * @param channelProperties channel properties
-     * @return registered event stream
+     * @return registered event channel
      * @throws UnableToResolveChannelException thrown if no provider could load
      * the channel
      */
-    public EventStream getOrCreateChannel(String scheme, String channelName,
+    public EventChannel getOrCreateChannel(String scheme, String channelName,
             Map<String, String> channelProperties)
             throws UnableToResolveChannelException {
 
-        //add default properties
-        Map<String, String> streamPropertiesCopy
-                = new HashMap<>(streamProperties); //defensive copy
-        DEFAULT_STREAM_PROPERTIES
-                .forEach((k, v) -> streamPropertiesCopy.putIfAbsent(k, v));
-
-        return provider.getStream(streamName, streamPropertiesCopy, codecs);
-
-        synchronized (streams) {
-            if (streams.containsKey(streamName)) {
-                return streams.get(streamName);
+        //channels.computeIfAbsent(channelName, (n) -> getChannel(channelProviders, scheme, n, channelProperties));
+        synchronized (channels) {
+            if (channels.containsKey(channelName)) {
+                return channels.get(channelName);
             }
 
-            Optional<EventChannelProvider> provider = streamProviders.findProvider(scheme);
-            if (!provider.isPresent()) {
-                //scheme is still not available after provider reload
-                final String error = String.format("Unable to resolve stream "
-                        + "'%s' with provider scheme '%s', no provider found.",
-                        streamName, scheme);
-                LOGGER.warning(error);
-                throw new UnableToResolveChannelException(error);
-            }
-
-            //stream not registered, create a default stream by this name
-            EventStream stream = createStream(streamName, streamProperties, provider.get());
-            streams.put(streamName, stream);
-            return stream;
+            EventChannel c = getChannel(channelProviders, scheme,
+                    channelName, channelProperties);
+            channels.put(channelName, c);
+            return c;
         }
-
     }
 
     /**
@@ -183,19 +201,40 @@ public class Canon {
      * @throws UnableToResolveChannelException if no channel provider could be
      * found or the provider could not load the requested channel
      */
-    public EventStream getOrCreateStream(String channelUrl)
+    public EventChannel getOrCreateChannel(String channelUrl)
             throws UnableToResolveChannelException {
-        try {
-            URI uri = URI.create(streamUrl);
-            return getOrCreateStream(uri.getScheme(), uri.getHost(),
-                    queryToStreamProperties(uri.getQuery()));
-        } catch (NullPointerException | IllegalArgumentException ex) {
-            final String error = String.format("Invalid stream url '%s' "
-                    + "provided when attempting to register a new stream.",
-                    streamUrl);
-            LOGGER.log(Level.WARNING, error, ex);
-            throw new UnableToResolveChannelException(error);
+        URI uri = URI.create(channelUrl);
+        final String channelName = getChannelName(uri);
+        synchronized (channels) {
+            if (channels.containsKey(channelName)) {
+                return channels.get(channelName);
+            }
+
+            final String channelScheme = getChannelScheme(uri);
+            final Map<String, String> channelProperties = getUriProperties(uri);
+            EventChannel c = getChannel(channelProviders, channelScheme, channelName, channelProperties);
+            channels.put(channelName, c);
+            return c;
         }
+    }
+
+    public EventStream getOrCreateStream(String streamUri)
+            throws UnableToResolveChannelException {
+        URI uri = URI.create(streamUri);
+
+        final String channelScheme = getChannelScheme(uri);
+        final String channelName = getChannelName(uri);
+        final String streamName = getStreamName(uri);
+        final Map<String, String> properties = getUriProperties(uri);
+        return getOrCreateStream(channelScheme, channelName,
+                streamName, properties);
+    }
+
+    public EventStream getOrCreateStream(String scheme, String channelName,
+            String streamName, Map<String, String> streamProperties)
+            throws UnableToResolveChannelException {
+        EventChannel channel = getOrCreateChannel(scheme, channelName, streamProperties);
+        return channel.getStream(streamName, streamProperties);
     }
 
     /**
@@ -208,12 +247,61 @@ public class Canon {
     }
 
     /**
+     * Returns the event channel or throws an Exception.
+     *
+     * @param providerManager
+     * @param channelScheme
+     * @param channelName
+     * @param channelProperties
+     * @return
+     * @throws UnableToResolveChannelException
+     */
+    private static EventChannel getChannel(ChannelProviderManager providerManager,
+            String channelScheme,
+            String channelName,
+            Map<String, String> channelProperties)
+            throws UnableToResolveChannelException {
+        return providerManager.findProvider(channelScheme, channelProperties)
+                .orElseThrow(() -> new UnableToResolveChannelException(
+                        String.format("No channel provider found for channel "
+                                + "'%s' with channel scheme '%s'",
+                                channelName, channelScheme)))
+                .getChannel(channelName, channelProperties);
+    }
+
+    private static EventStream getStream(String streamUri,
+            ChannelProviderManager providerManager)
+            throws StreamReadException, UnableToResolveChannelException {
+        final URI uri = URI.create(streamUri);
+        final String channelScheme = getChannelScheme(uri);
+        final String channelName = getChannelName(uri);
+        final String streamName = getStreamName(uri);
+        final Map<String, String> streamProperties = getUriProperties(uri);
+        EventChannel channel = getChannel(providerManager, channelScheme,
+                channelName, streamProperties);
+        return channel.getStream(streamName, streamProperties);
+    }
+
+    private static String getChannelScheme(URI uri) {
+        return uri.getScheme();
+    }
+
+    private static String getStreamName(URI uri) {
+        return uri.getPath();
+    }
+
+    private static String getChannelName(URI uri) {
+        return uri.getHost();
+    }
+
+    /**
      * Convert a URI query string to a map of stream properties.
      *
-     * @param uriQuery decoded URI query portion or null
+     * @param uri d
      * @return stream properties map
      */
-    private Map<String, String> queryToStreamProperties(String uriQuery) {
+    private static Map<String, String> getUriProperties(URI uri) {
+        final String uriQuery = uri.getQuery();
         final Map<String, String> streamProperties;
         if (uriQuery == null || uriQuery.isEmpty()) {
             streamProperties = Collections.EMPTY_MAP;

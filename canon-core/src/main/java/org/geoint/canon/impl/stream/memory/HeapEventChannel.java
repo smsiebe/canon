@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.geoint.canon.stream.EventChannel;
@@ -18,7 +20,8 @@ public class HeapEventChannel implements EventChannel {
     private final String name;
     private final Map<String, String> channelProperties;
     private final Map<String, HeapEventStream> streams;
-
+    private final ExecutorService executor = Executors.newCachedThreadPool();
+    
     /**
      * Create a new memory channel without any streams.
      *
@@ -77,6 +80,13 @@ public class HeapEventChannel implements EventChannel {
         return streams.entrySet().stream()
                 .map(Entry::getValue)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public EventStream getStream(String streamName, 
+            Map<String, String> streamProperties) {
+        return streams.computeIfAbsent(name, 
+                (n) -> new HeapEventStream(n, streamName, streamProperties, executor));
     }
 
 }

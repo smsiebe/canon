@@ -24,27 +24,27 @@ import org.geoint.canon.event.EventException;
  */
 public class StreamReadException extends EventException {
 
-    private final String channelName;
-    private final String streamName;
+    public StreamReadException() {
+    }
+
+    public StreamReadException(String message) {
+        super(message);
+    }
+
+    public StreamReadException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public StreamReadException(Throwable cause) {
+        super(cause);
+    }
 
     public StreamReadException(String channelName, String streamName, String message) {
         super(prefixMessage(channelName, streamName, message));
-        this.channelName = channelName;
-        this.streamName = streamName;
     }
 
     public StreamReadException(String channelName, String streamName, String message, Throwable cause) {
         super(prefixMessage(channelName, streamName, message), cause);
-        this.channelName = channelName;
-        this.streamName = streamName;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public String getStreamName() {
-        return streamName;
     }
 
     private static String prefixMessage(String channelName, String streamName,

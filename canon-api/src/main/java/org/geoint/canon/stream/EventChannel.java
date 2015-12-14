@@ -1,6 +1,7 @@
 package org.geoint.canon.stream;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * A grouping of related event streams.
@@ -25,4 +26,15 @@ public interface EventChannel {
      * @return streams of the channel
      */
     Collection<EventStream> getStreams();
+
+    /**
+     * Returns a stream by this name in this channel, creating the stream if it
+     * does not exist.
+     *
+     * @param streamName
+     * @param streamProperties
+     * @return named stream within this channel
+     */
+    EventStream getStream(String streamName, Map<String, String> streamProperties);
+
 }
