@@ -15,6 +15,7 @@
  */
 package org.geoint.canon.impl.codec;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -34,12 +35,12 @@ public class HierarchicalCodecResolver implements CodecResolver {
     public HierarchicalCodecResolver(CodecResolver parent,
             EventCodec... tierCodecs) {
         this.parentTier = parent;
-        this.tierCodecs = Arrays.asList(tierCodecs);
+        this.tierCodecs = modifiableCollection(tierCodecs);
     }
 
     public HierarchicalCodecResolver(EventCodec... tierCodecs) {
         this.parentTier = null;
-        this.tierCodecs = Arrays.asList(tierCodecs);
+        this.tierCodecs = modifiableCollection(tierCodecs);
     }
 
     public void add(EventCodec codec) {
@@ -62,6 +63,19 @@ public class HierarchicalCodecResolver implements CodecResolver {
                         : null
                 )
         );
+    }
+
+    /**
+     * Returns a modifiable collection containing the provided codecs.
+     *
+     * @param codecs
+     * @return modifiable collection
+     */
+    private static Collection<EventCodec> modifiableCollection(
+            EventCodec... codecs) {
+        Collection<EventCodec> codecCollection = new ArrayList<>(codecs.length);
+        Arrays.stream(codecs).forEach((c) -> codecCollection.add(c));
+        return codecCollection;
     }
 
 }

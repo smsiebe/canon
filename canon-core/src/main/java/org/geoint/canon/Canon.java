@@ -16,14 +16,11 @@
 package org.geoint.canon;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.EventCodec;
@@ -53,6 +50,8 @@ public class Canon {
     private static final Logger LOGGER = Logger.getLogger(Canon.class.getName());
 
     private Canon(EventStream adminStream, ChannelProviderManager providers) {
+        LOGGER.log(Level.FINE, () -> String.format("Creating canon instance "
+                + "using admin channel %s", adminStream.toString()));
         channelProviders = providers;
         this.codecs = new HierarchicalCodecResolver();
         this.adminStream = adminStream;

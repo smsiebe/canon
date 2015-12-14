@@ -61,15 +61,15 @@ public enum FutureWatcher {
 
     }
 
-    public <R> void onSuccess(Future<R> future, Consumer<R> callback) {
+    public <R> void onSuccess(Future<R> future, Consumer<Future<R>> callback) {
         callbacks.add(new FutureCallback(future, callback, CallbackTrigger.COMPLETE));
     }
 
-    public <R> void onException(Future<R> future, Consumer<R> callback) {
+    public <R> void onException(Future<R> future, Consumer<Future<R>> callback) {
         callbacks.add(new FutureCallback(future, callback, CallbackTrigger.FAILED));
     }
 
-    public <R> void onCancel(Future<R> future, Consumer<R> callback) {
+    public <R> void onCancel(Future<R> future, Consumer<Future<R>> callback) {
         callbacks.add(new FutureCallback(future, callback, CallbackTrigger.CANCELLED));
     }
 
