@@ -29,7 +29,7 @@ public enum FutureWatcher {
     private final Thread futureMonitorThread;
     private final Executor callbackExecutor; //used to execute callbacks asynchronously
     private static final String PROPERTY_SLEEP_TIMEOUT = "canon.futureWatcher.timeout";
-    private static final String DEFAULT_SLEEP_TIMEOUT = "10";
+    private static final String DEFAULT_SLEEP_TIMEOUT = "1";
     private static final String PROPERTY_CALLBACK_THREADS = "futureWatcher.maxThreads";
 
     private FutureWatcher() {
@@ -70,7 +70,7 @@ public enum FutureWatcher {
     }
 
     public <R> void onCancel(Future<R> future, Consumer<Future<R>> callback) {
-        callbacks.add(new FutureCallback(future, callback, CallbackTrigger.CANCELLED));
+        callbacks.add(new FutureCallback(future, callback, CallbackTrigger.CANCELED));
     }
 
     /**
@@ -81,10 +81,15 @@ public enum FutureWatcher {
         Iterator<FutureCallback> iterator = callbacks.iterator();
         while (iterator.hasNext()) {
             FutureCallback callback = iterator.next();
+            System.out.println("checking future");
             if (callback.isDone()) {
+                System.out.println("future is done");
                 callbackExecutor.execute(callback::callback);
                 iterator.remove();//future is complete, remove callback
-            }
+            } else {
+                System.out.println("future is not done");
+            } 
+            
 
         }
     }
@@ -99,7 +104,7 @@ public enum FutureWatcher {
     }
 
     enum CallbackTrigger {
-        COMPLETE, FAILED, CANCELLED
+        COMPLETE, FAILED, CANCELED
     };
 
     /**
@@ -120,17 +125,24 @@ public enum FutureWatcher {
             this.trigger = trigger;
         }
 
+        /**
+         * Returns true if the callback has completed, was canceled, or an
+         * exception was thrown
+         *
+         * @return
+         */
         public boolean isDone() {
             return future.isDone();
         }
 
         public void callback() {
             if (!future.isDone()) {
+                System.out.println("future is not done!");
                 throw new IllegalStateException("Asynchronous operation has not "
                         + "completed yet, unable to exectute callback.");
             }
-
             if (isCorrectState()) {
+                System.out.println("correct state");
                 callback.accept(future);
             }
         }
@@ -142,7 +154,13 @@ public enum FutureWatcher {
          * @return true if this callback should be executed, otherwise false
          */
         private boolean isCorrectState() {
-            if (future.isCancelled() && trigger.equals(CallbackTrigger.CANCELLED)) {
+            
+            if (trigger.equals(CallbackTrigger.CANCELED)) {
+                System.out.println("Cancelled!");
+            } else {
+                System.out.println("nope, trigger type is "+trigger.name());
+            }
+            if (future.isCancelled() && trigger.equals(CallbackTrigger.CANCELED)) {
                 return true;
             }
 

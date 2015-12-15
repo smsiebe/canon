@@ -1,6 +1,5 @@
 package org.geoint.canon.impl.concurrent;
 
-import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -11,6 +10,7 @@ import java.util.concurrent.TimeoutException;
  * Simple Future wrapper for completed results.
  *
  * @author steve_siebert
+ * @param <T>
  */
 public class CompletedFuture<T> implements Future<T> {
 
@@ -33,6 +33,14 @@ public class CompletedFuture<T> implements Future<T> {
     }
 
     /**
+     * Create a completed future in canceled state
+     */
+    private CompletedFuture() {
+        this.results = null;
+        this.exception = null;
+    }
+
+    /**
      * Wraps the results of a successfully completed operation.
      *
      * @param <T>
@@ -49,7 +57,7 @@ public class CompletedFuture<T> implements Future<T> {
      * @return
      */
     public static CompletedFuture canceled() {
-        return new CompletedFuture(null);
+        return new CompletedFuture();
     }
 
     /**
@@ -64,7 +72,7 @@ public class CompletedFuture<T> implements Future<T> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return isCancelled();
+        return true;
     }
 
     @Override
