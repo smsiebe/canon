@@ -1,6 +1,5 @@
 package org.geoint.canon.impl.concurrent;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -33,7 +32,7 @@ public class FutureWatcherTest {
 
         AtomicBoolean isCalled = new AtomicBoolean(false);
         watcher.onSuccess(success, (f) -> isCalled.set(true));
-        Thread.sleep(10); //give the watcher some time to process
+        Thread.sleep(100); //give the watcher some time to process
         assertTrue("success callback was not called", isCalled.get());
 
         watcher.onCancel(success, (f) -> fail("successful test called cancel"
@@ -59,7 +58,7 @@ public class FutureWatcherTest {
 
         AtomicBoolean isCalled = new AtomicBoolean(false);
         watcher.onException(exception, (f) -> isCalled.set(true));
-        Thread.sleep(10); //give the watcher some time to process
+        Thread.sleep(100); //give the watcher some time to process
         assertTrue("exception callback was not called", isCalled.get());
     }
 
@@ -73,7 +72,7 @@ public class FutureWatcherTest {
 
         AtomicBoolean isCalled = new AtomicBoolean(false);
         watcher.onCancel(canceled, (f) -> isCalled.set(true));
-        Thread.sleep(10); //give the watcher some time to process
+        Thread.sleep(100); //give the watcher some time to process
         assertTrue("cancel callback was not called", isCalled.get());
 
         watcher.onException(canceled, (f) -> fail("cancel test called "

@@ -29,7 +29,7 @@ import org.geoint.canon.event.EventMessage;
 public interface EventCodec<E> {
 
     /**
-     * Determines if this codec can encode/decode the specified event type.
+     * Event type supported by this codec.
      *
      * @return true if this codec can encode/decode this event
      */

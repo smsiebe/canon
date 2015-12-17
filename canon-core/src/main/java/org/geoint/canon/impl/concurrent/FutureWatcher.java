@@ -23,8 +23,12 @@ public enum FutureWatcher {
 
     INSTANCE;
 
-    private final Collection<FutureCallback> callbacks
-            = Collections.synchronizedCollection(new ArrayList<>());
+    private static enum CallbackTrigger {
+        COMPLETE, FAILED, CANCELED
+    };
+
+    //used for synchronization lock for access to callbacks
+    private final Collection<FutureCallback> callbacks = new ArrayList<>();
 
     private final Thread futureMonitorThread;
     private final Executor callbackExecutor; //used to execute callbacks asynchronously
@@ -62,15 +66,47 @@ public enum FutureWatcher {
     }
 
     public <R> void onSuccess(Future<R> future, Consumer<Future<R>> callback) {
-        callbacks.add(new FutureCallback(future, callback, CallbackTrigger.COMPLETE));
+//        if (future.isDone()) {
+//            try {
+//                future.get();
+//                callbackExecutor.execute(() -> callback.accept(future));
+//            } catch (ExecutionException | InterruptedException ex) {
+//                //if we get here from ExecutionException, callback won't be called
+//                //we won't get here from InterruptedException, future.isDone is true
+//            }
+//        } else {
+        synchronized (callbacks) {
+            callbacks.add(new FutureCallback(future, callback, CallbackTrigger.COMPLETE));
+        }
+//        }
     }
 
     public <R> void onException(Future<R> future, Consumer<Future<R>> callback) {
-        callbacks.add(new FutureCallback(future, callback, CallbackTrigger.FAILED));
+//        if (future.isDone()) {
+//            try {
+//                future.get();
+//            } catch (ExecutionException ex) {
+//                callbackExecutor.execute(() -> callback.accept(future));
+//            } catch (InterruptedException e) {
+//                //won't ge here as future.isDone is true
+//            }
+//        } else {
+        synchronized (callbacks) {
+            callbacks.add(new FutureCallback(future, callback, CallbackTrigger.FAILED));
+        }
+//        }
     }
 
     public <R> void onCancel(Future<R> future, Consumer<Future<R>> callback) {
-        callbacks.add(new FutureCallback(future, callback, CallbackTrigger.CANCELED));
+//        if (future.isCancelled()) {
+//            callbackExecutor.execute(() -> callback.accept(future));
+//        } else if (future.isDone()) {
+//            //do nothing
+//        } else {
+        synchronized (callbacks) {
+            callbacks.add(new FutureCallback(future, callback, CallbackTrigger.CANCELED));
+        }
+//        }
     }
 
     /**
@@ -78,19 +114,15 @@ public enum FutureWatcher {
      * callbacks as needed.
      */
     private void checkFutures() {
-        Iterator<FutureCallback> iterator = callbacks.iterator();
-        while (iterator.hasNext()) {
-            FutureCallback callback = iterator.next();
-            System.out.println("checking future");
-            if (callback.isDone()) {
-                System.out.println("future is done");
-                callbackExecutor.execute(callback::callback);
-                iterator.remove();//future is complete, remove callback
-            } else {
-                System.out.println("future is not done");
-            } 
-            
-
+        synchronized (callbacks) {
+            Iterator<FutureCallback> iterator = callbacks.iterator();
+            while (iterator.hasNext()) {
+                FutureCallback callback = iterator.next();
+                if (callback.isDone()) {
+                    callbackExecutor.execute(callback::callback);
+                    iterator.remove();
+                }
+            }
         }
     }
 
@@ -103,16 +135,12 @@ public enum FutureWatcher {
         }
     }
 
-    enum CallbackTrigger {
-        COMPLETE, FAILED, CANCELED
-    };
-
     /**
      * Encapsulates the individual future callback.
      *
      * @param <R>
      */
-    private class FutureCallback<R> {
+    private static class FutureCallback<R> {
 
         private final Future<R> future;
         private final Consumer<Future<R>> callback;
@@ -154,11 +182,14 @@ public enum FutureWatcher {
          * @return true if this callback should be executed, otherwise false
          */
         private boolean isCorrectState() {
-            
+
+            //check cancel state first, since it will throw a CancellationException 
+            //on call to Future#get
             if (trigger.equals(CallbackTrigger.CANCELED)) {
                 System.out.println("Cancelled!");
             } else {
-                System.out.println("nope, trigger type is "+trigger.name());
+
+                System.out.println("nope, trigger type is " + trigger.name());
             }
             if (future.isCancelled() && trigger.equals(CallbackTrigger.CANCELED)) {
                 return true;

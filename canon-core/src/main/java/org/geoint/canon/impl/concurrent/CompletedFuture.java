@@ -91,7 +91,7 @@ public class CompletedFuture<T> implements Future<T> {
             throw exception;
         }
         if (results == null) {
-            throw new CancellationException();
+            throw new CancellationException("This future was canceled");
         }
         return results;
     }
