@@ -18,11 +18,10 @@ package org.geoint.canon.client.stream.reader;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import org.geoint.canon.EventMessage;
-import org.geoint.canon.StreamReadException;
-import org.geoint.canon.client.stream.reader.DurableEventReader;
-import org.geoint.canon.stream.reader.EventReader;
-import org.geoint.canon.stream.reader.EventReaderDecorator;
+import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.stream.EventReader;
+import org.geoint.canon.stream.EventReaderDecorator;
+import org.geoint.canon.stream.StreamReadException;
 
 /**
  * Keeps track of the current stream position using a local file for

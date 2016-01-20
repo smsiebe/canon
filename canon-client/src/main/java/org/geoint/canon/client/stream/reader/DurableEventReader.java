@@ -15,9 +15,9 @@
  */
 package org.geoint.canon.client.stream.reader;
 
-import org.geoint.canon.EventMessage;
-import org.geoint.canon.StreamReadException;
-import org.geoint.canon.stream.reader.EventReader;
+import org.geoint.canon.event.EventMessage;
+import org.geoint.canon.stream.EventReader;
+import org.geoint.canon.stream.StreamReadException;
 
 /**
  * An event reader that keeps track of the events which have been successfully

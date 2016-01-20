@@ -3,16 +3,15 @@
  -----
 
 Mailing Lists
-
-*-----------------------------*-------------------------------------------*
-*          Address            |                  Purpose                  |
-*-----------------------------*-------------------------------------------*
-* canon-users@geoint.org      | canon community support (Q&A)             |
-*-----------------------------*-------------------------------------------*
-* canon-developers@geoint.org | coordinate/discuss development of canon   |
-*-----------------------------*-------------------------------------------*
+*--------------------------------------------------------------------------------------------------------*-------------------------------------------*
+|                                           <<Address>>                                                  |                <<Purpose>>                |
+*--------------------------------------------------------------------------------------------------------*-------------------------------------------*
+* {{{http://lists.geoint.org/listinfo.cgi/Canon-users-geoint.org} canon-users@geoint.org}}               | canon community support (Q&A)             |
+*--------------------------------------------------------------------------------------------------------*-------------------------------------------*
+* {{{http://lists.geoint.org/listinfo.cgi/Canon-developers-geoint.org} canon-developers@geoint.org}}     | coordinate/discuss development of canon   |
+*--------------------------------------------------------------------------------------------------------*-------------------------------------------*
 
 Bug/Issue Tracking
 
- Issues are currently being managed on {{https://github.com/geoint/canon/issues} github}.
+ Issues are currently being managed on {{{https://github.com/geoint/canon/issues} github}}.
 

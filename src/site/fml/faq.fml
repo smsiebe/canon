@@ -1,8 +1,35 @@
 <?xml version="1.0"?>
 <faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/FML/1.0"
-  xsi:schemaLocation="http://maven.apache.org/FML/1.0 http://maven.apache.org/xsd/fml-1.0.xsd"
-  id="General FAQ">
-  <part id="General">
-    
-  </part>
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0 http://maven.apache.org/xsd/fml-1.0.xsd"
+      id="General FAQ">
+    <part id="General">
+        <faq id="what">
+            <question>What is canon?</question>
+            <answer>
+                <p>
+                  
+                </p>
+            </answer>
+        </faq>
+        <faq id="why">
+            <question>Why use canon instead of a traditional database?</question>
+            <answer>
+                <p>
+                  
+                </p>
+            </answer>
+        </faq>
+        <faq id="who">
+            <question>Who is using canon</question>
+            <answer>
+                <p>
+                    Canon is currently undergoing IOC testing and fielding by the 
+                    US Army G2 GEOINT division to deliver accrediated software 
+                    components that run across a heterogenous and distributed 
+                    containers including a public/private (hybrid) 
+                    cloud and tactical systems.
+                </p>
+            </answer>
+        </faq>
+    </part>
 </faqs>
