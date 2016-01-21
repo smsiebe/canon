@@ -2,10 +2,10 @@
 */target/*
 nb-configuration.xml
 
-/canon-client
-/canon-core
-/canon-file-stream
-/canon-replication
-/canon-rest-stream
-/canon-server
-/canon-spi
+canon-client
+canon-core
+canon-file-stream
+canon-replication
+canon-rest-stream
+canon-server
+canon-spi
