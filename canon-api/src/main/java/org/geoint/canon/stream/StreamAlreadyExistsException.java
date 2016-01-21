@@ -20,7 +20,7 @@ import org.geoint.canon.event.EventException;
 /**
  * Thrown if there there is a stream name collision.
  * 
- * @author Steve Siebert <steve@t-3-solutions.com>
+ * @author Steve Siebert
  */
 public class StreamAlreadyExistsException extends EventException {
 

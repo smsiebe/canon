@@ -7,7 +7,12 @@
             <question>What is canon?</question>
             <answer>
                 <p>
-                  
+                    Canon is a specialized NoSQL database that stores events in 
+                    commit sequence.  Canon provides features such as 
+                    support for distributed (master-slave, master-master) 
+                    replication, pluggable automated reconciliation, 
+                    can be deployed as an embedded database or as a network
+                    service, and the ability to sanitize event content.
                 </p>
             </answer>
         </faq>
@@ -15,7 +20,12 @@
             <question>Why use canon instead of a traditional database?</question>
             <answer>
                 <p>
-                  
+                    Canon is designed for applications with high data 
+                    integrity, availability, and non-repudiation requirements. 
+                    Originally designed for use to meet the unique demands of 
+                    US Army intelligence missions, Canon can be used to 
+                    meet may other requirements.  For more information, see 
+                    the Canon Overview document.
                 </p>
             </answer>
         </faq>

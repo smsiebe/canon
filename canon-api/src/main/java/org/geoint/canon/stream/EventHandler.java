@@ -46,9 +46,9 @@ public interface EventHandler {
     /**
      * Called when the handler is unable to process an event.
      *
-     * @param event
-     * @param ex
-     * @return
+     * @param event event
+     * @param ex exception thrown by event handling
+     * @return action to take
      */
     default EventHandlerAction onFailure(AppendedEventMessage event,
             Exception ex) {

@@ -23,14 +23,15 @@ import org.geoint.canon.stream.StreamAppendException;
 /**
  * Creates an EventMessage wrapper for an event.
  *
- * @author Steve Siebert <steve@t-3-solutions.com>
+ * @author Steve Siebert
  */
 public interface EventMessageBuilder {
 
     /**
      * Reference to the creator/publisher of the event.
      *
-     * @param authorizerId
+     * @param authorizerId unique identity of the individual authorizing the
+     * event
      * @return this builder (fluid interface)
      */
     EventMessageBuilder authorizedBy(String authorizerId);
@@ -60,8 +61,8 @@ public interface EventMessageBuilder {
      * applications, however this is not mandatory. Header names starting with
      * {@code canon.} are reserved and may not be used.
      *
-     * @param name
-     * @param value
+     * @param name header name
+     * @param value header value
      * @return this builder (fluid interface)
      */
     EventMessageBuilder header(String name, String value);
@@ -73,8 +74,9 @@ public interface EventMessageBuilder {
      * the EventMessageBuilder after the event message payload has been provided
      * will be ignored.
      *
-     * @param event
-     * @throws StreamAppendException
+     * @param event event content
+     * @throws StreamAppendException if there was a problem appending to the
+     * stream
      */
     void event(InputStream event) throws StreamAppendException;
 
@@ -88,10 +90,11 @@ public interface EventMessageBuilder {
      * the EventMessageBuilder after the event message payload has been provided
      * will be ignored.
      *
-     * @param event
+     * @param event event content
      * @throws EventCodecException thrown if no codec could be found or the
      * discovered codec could not be used to encode this object type
-     * @throws StreamAppendException
+     * @throws StreamAppendException if there was a problem appending to the
+     * stream
      *
      */
     void event(Object event) throws EventCodecException, StreamAppendException;
@@ -104,12 +107,14 @@ public interface EventMessageBuilder {
      * the EventMessageBuilder after the event message payload has been provided
      * will be ignored.
      *
-     * @param event
-     * @param codec
+     * @param <T> event type
+     * @param event event
+     * @param codec codec for event
      * @throws EventCodecException thrown if the codec is invalid or could not
      * be used to encode this object type
-     * @throws StreamAppendException
+     * @throws StreamAppendException if there was a problem appending to the
+     * stream
      */
-    void event(Object event, EventCodec<?> codec)
+    <T> void event(T event, EventCodec<T> codec)
             throws EventCodecException, StreamAppendException;
 }

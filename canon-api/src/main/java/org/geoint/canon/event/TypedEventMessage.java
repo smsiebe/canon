@@ -26,7 +26,7 @@ public interface TypedEventMessage<E> extends EventMessage{
     /**
      * Return the domain event as an object instance.
      * 
-     * @return 
+     * @return typed event
      */
     E getEvent();
 }

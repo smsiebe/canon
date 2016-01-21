@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * EventMessage instances are wrappers around the an application domain-defined
  * event associated with a domain entity.
  *
- * @author Steve Siebert <steve@t-3-solutions.com>
+ * @author Steve Siebert 
  */
 public interface EventMessage {
 
@@ -85,7 +85,7 @@ public interface EventMessage {
     /**
      * Return the requested event header, if set.
      *
-     * @param headerName
+     * @param headerName header name
      * @return optional header
      */
     Optional<String> findHeader(String headerName);
@@ -93,7 +93,7 @@ public interface EventMessage {
     /**
      * Return the requested event header or the default value.
      *
-     * @param headerName
+     * @param headerName header name
      * @param defaultValue default value returned if the header is not set
      * @return header value
      */

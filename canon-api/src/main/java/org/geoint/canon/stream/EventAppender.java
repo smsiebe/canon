@@ -16,7 +16,7 @@ public interface EventAppender {
     /**
      * Returns a message builder used to create a new event.
      *
-     * @param eventType
+     * @param eventType type of event
      * @return message builder
      * @throws StreamAppendException thrown if there is a problem appending and
      * event to the contextual stream
@@ -42,7 +42,7 @@ public interface EventAppender {
      * Set an event codec on an appender will take precedence over any matching
      * codec set at at a higher level.
      *
-     * @param codec
+     * @param codec event codec
      * @return this appender (fluid interface)
      */
     EventAppender useCodec(EventCodec codec);

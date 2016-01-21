@@ -18,7 +18,6 @@ package org.geoint.canon.stream;
 import java.io.Closeable;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.event.AppendedEventMessage;
 
@@ -30,17 +29,17 @@ import org.geoint.canon.event.AppendedEventMessage;
 public interface EventReader extends Closeable, AutoCloseable {
 
     /**
-     * 
+     *
      * @return name of the channel
      */
     String getChannelName();
-    
+
     /**
-     * 
+     *
      * @return name of the stream
      */
     String getStreamName();
-    
+
     /**
      * Checks if there is a sequential event available after the readers current
      * position.
@@ -63,8 +62,8 @@ public interface EventReader extends Closeable, AutoCloseable {
      * Returns the next event in the stream, waiting up to the specified time
      * for an event.
      *
-     * @param timeout
-     * @param unit
+     * @param timeout how long to wait
+     * @param unit time unit of timeout
      * @return next event or null if timed out
      * @throws StreamReadException thrown if there is a problem reading events
      * @throws InterruptedException thrown if the blocked thread was interrupted
@@ -77,7 +76,7 @@ public interface EventReader extends Closeable, AutoCloseable {
      *
      * @return next event in the stream
      * @throws StreamReadException thrown if there is a problem reading events
-     * @throws InterruptedException
+     * @throws InterruptedException if the waiting thread was interrupted
      */
     AppendedEventMessage take()
             throws StreamReadException, InterruptedException;
