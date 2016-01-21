@@ -9,7 +9,7 @@ GEOINT office to develop a specialized distributed sequential event store.
 
 ** Program Background
 
-   Canon is the backbone of the {{{https://terpene.geoint.org} terpene}} 
+   Canon is the backbone of the [terpene](https://terpene.geoint.org)
 platform, providing a communication and data persistence framework to realize 
 the data confidentiality, complete non-repudiation, and availability 
 requirements of terpene.  
