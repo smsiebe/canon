@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/FML/1.0"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0 http://maven.apache.org/xsd/fml-1.0.xsd"
+      id="General FAQ">
+    <part id="General">
+        <faq id="what">
+            <question>What is canon?</question>
+            <answer>
+                <p>
+                    Canon is a specialized NoSQL database that stores events in 
+                    commit sequence.  Canon provides features such as 
+                    support for distributed (master-slave, master-master) 
+                    replication, pluggable automated reconciliation, 
+                    can be deployed as an embedded database or as a network
+                    service, and the ability to sanitize event content.
+                </p>
+            </answer>
+        </faq>
+        <faq id="why">
+            <question>Why use canon instead of a traditional database?</question>
+            <answer>
+                <p>
+                    Canon is designed for applications with high data 
+                    integrity, availability, and non-repudiation requirements. 
+                    Originally designed for use to meet the unique demands of 
+                    US Army intelligence missions, Canon can be used to 
+                    meet may other requirements.  For more information, see 
+                    the Canon Overview document.
+                </p>
+            </answer>
+        </faq>
+        <faq id="who">
+            <question>Who is using canon</question>
+            <answer>
+                <p>
+                    Canon is currently undergoing IOC testing and fielding by the 
+                    US Army G2 GEOINT division to deliver accrediated software 
+                    components that run across a heterogenous and distributed 
+                    containers including a public/private (hybrid) 
+                    cloud and tactical systems.
+                </p>
+            </answer>
+        </faq>
+    </part>
+</faqs>

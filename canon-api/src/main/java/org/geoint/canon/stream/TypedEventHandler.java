@@ -7,7 +7,7 @@ import org.geoint.canon.event.AppendedEventMessage;
  * An event handler which only notifies on a single event type.
  *
  * @author steve_siebert
- * @param <T>
+ * @param <T> event type
  */
 public abstract class TypedEventHandler<T> implements EventHandler {
 
@@ -22,7 +22,7 @@ public abstract class TypedEventHandler<T> implements EventHandler {
         if (!event.getEventType().equalsIgnoreCase(codec.getSupportedEventType())) {
             return;
         }
-        
+
         handle(event, codec.decode(event));
     }
 

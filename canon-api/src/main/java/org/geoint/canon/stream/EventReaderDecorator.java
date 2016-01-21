@@ -49,7 +49,7 @@ public abstract class EventReaderDecorator implements EventReader {
     /**
      * Default implementation delegates call to decorated reader.
      *
-     * @return
+     * @return true if there is a next event
      */
     @Override
     public boolean hasNext() {
@@ -62,11 +62,11 @@ public abstract class EventReaderDecorator implements EventReader {
      * implementations only need to implement 
      * {@link EventReaderDecorator#poll() } for most cases.
      *
-     * @param timeout
-     * @param unit
-     * @return
-     * @throws StreamReadException
-     * @throws InterruptedException
+     * @param timeout time to wait for event
+     * @param unit time unit of timeout
+     * @return next event or null
+     * @throws StreamReadException if there was a problem reading from the stream
+     * @throws InterruptedException if the thread waiting for the next event was interrupted
      */
     @Override
     public Optional<AppendedEventMessage> poll(long timeout, TimeUnit unit)
@@ -88,9 +88,9 @@ public abstract class EventReaderDecorator implements EventReader {
      * implementations only need to implement 
      * {@link EventReaderDecorator#poll() } for most cases.
      *
-     * @return
-     * @throws StreamReadException
-     * @throws InterruptedException
+     * @return next event on the stream
+     * @throws StreamReadException if there was a problem reading from the stream
+     * @throws InterruptedException if the thread waiting for the next event was interrupted
      */
     @Override
     @SuppressWarnings("SleepWhileInLoop")
@@ -106,8 +106,8 @@ public abstract class EventReaderDecorator implements EventReader {
     /**
      * Default implementation delegates call to decorated reader.
      *
-     * @param sequence
-     * @throws UnknownEventException
+     * @param sequence the position in the stream to move
+     * @throws UnknownEventException if there isn't such a position
      */
     @Override
     public void setPosition(String sequence) throws UnknownEventException {
@@ -127,7 +127,7 @@ public abstract class EventReaderDecorator implements EventReader {
     /**
      * Default implementation delegates call to decorated reader.
      *
-     * @throws IOException
+     * @throws IOException if there was a problem closing the decorated reader
      */
     @Override
     public void close() throws IOException {

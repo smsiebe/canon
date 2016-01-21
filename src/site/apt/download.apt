@@ -1,0 +1,23 @@
+Binary Downloads
+
+   It's recommended to always use the latest version of canon within your 
+application.  
+
+* System Requirements
+
+*------------------------------------*--------------------------------------------------------------------------------*
+| <<Java Runtime Environment (JRE)>> | canon requires Java 8 - it's always recommended to use the latest version    |
+*------------------------------------*--------------------------------------------------------------------------------*
+| <<Memory>>                         | No minimum requirement                                                         |
+*------------------------------------*--------------------------------------------------------------------------------*
+| <<Disk>>                           |                                                                                |
+*------------------------------------*--------------------------------------------------------------------------------*
+| <<Operating System>>               | canon has been tested on Linux RHEL 2.6.32-573.12.1.el6.x86_64 and Windows 7 |
+* -----------------------------------*--------------------------------------------------------------------------------*
+
+* Binary Files
+
+   Binary files are available from {{{https://github.com/GEOINT/canon/releases} github}}.
+
+* Maven
+

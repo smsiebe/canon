@@ -17,7 +17,6 @@ package org.geoint.canon.codec;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 import org.geoint.canon.event.EventMessage;
 
 /**
@@ -38,8 +37,8 @@ public interface EventCodec<E> {
     /**
      * Convert the domain event instance to encoded event content.
      *
-     * @param event
-     * @param out
+     * @param event domain event to convert
+     * @param out stream to write converted event
      * @throws IOException thrown if there are problems writing to the stream
      * @throws EventCodecException thrown if there is a problem encoding the
      * domain event

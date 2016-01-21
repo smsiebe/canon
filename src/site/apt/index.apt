@@ -1,0 +1,42 @@
+Canon
+
+   Canon is a Government Open Source (GOSS) project funded by the US Army G2 
+GEOINT office to develop a specialized distributed sequential event store.  
+
+
+Program Background
+
+   Canon is the backbone of the {{{https://terpene.geoint.org} terpene}} 
+platform, providing a communication and data persistence framework to realize 
+the data confidentiality, complete non-repudiation, and availability 
+requirements of terpene.  
+
+   Canon can be used as an embedded database, as a network service, or a 
+combination of the two to support offline operations.
+
+   Though canon may be used as the primary data store for traditional applications 
+architectures, the power of canon comes from the way it facilitates an 
+alternative approach to implementing data persistence and retrieval within 
+an application.  
+
+Documentation
+
+
+Support
+
+   Support for canon is available in different ways, but before reaching out we 
+we recommend you first read the {{{./faq.html} FAQ}} and the 
+{{{/docs/canon_overview.pdf} Canon Overview}}, as they answer the most 
+common questions. 
+
+   There are two general ways to reach out to the canon community: through 
+the {{{./mail-lists.html} mailing lists}} and the {{{./support.html} issue 
+tracker}}.  Before submitting a new issue, please take a moment to search on 
+existing tickets, as your problem or feature request may already be 
+registered and you can instead add your vote to an existing ticket.
+
+Archives
+
+   Unless there are security concerns with a particular release, you can find 
+previous versions of canon and related documentation from the 
+{{{/archive/index.html} archive}}.

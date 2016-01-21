@@ -54,10 +54,11 @@ public interface EventStream<E extends EventMessage>
 
     /**
      * The current/last appended sequence of the stream.
-     * @return 
+     *
+     * @return the current sequence of this stream
      */
     String getCurrentSequence();
-    
+
     /**
      * Returns a new event reader for the stream.
      *
@@ -69,7 +70,7 @@ public interface EventStream<E extends EventMessage>
      * Registers an event handler which will be called for each event on the
      * stream, starting at the first event in the stream.
      *
-     * @param handler
+     * @param handler event handler
      * @return handler resource
      */
     HandlerNotifier addHandler(EventHandler handler);
@@ -78,8 +79,8 @@ public interface EventStream<E extends EventMessage>
      * Registers an event handler which will be called for each event on the
      * stream that passes the provided filters test.
      *
-     * @param handler
-     * @param filter
+     * @param handler event handler
+     * @param filter filters events before they are provided to the handler
      * @return handler resource
      */
     HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
@@ -88,10 +89,10 @@ public interface EventStream<E extends EventMessage>
      * Registers an event handler which will be called for each event on the
      * stream, starting at the specified event.
      *
-     * @param handler
-     * @param sequence
+     * @param handler event handler
+     * @param sequence stream position to start
      * @return handler resource
-     * @throws UnknownEventException
+     * @throws UnknownEventException if the provided sequence is invalid
      */
     HandlerNotifier addHandler(EventHandler handler, String sequence)
             throws UnknownEventException;
@@ -100,11 +101,11 @@ public interface EventStream<E extends EventMessage>
      * Registers an event handler which will be called for each event on the
      * stream, starting at the specified event.
      *
-     * @param handler
-     * @param filter
-     * @param sequence
+     * @param handler event handler
+     * @param filter filters events before they are provided to the handler
+     * @param sequence stream position to start
      * @return handler resource
-     * @throws UnknownEventException
+     * @throws UnknownEventException if the provided sequence is invalid
      */
     HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
             String sequence) throws UnknownEventException;
@@ -112,8 +113,8 @@ public interface EventStream<E extends EventMessage>
     /**
      * Registers an event handler with the reader it uses to retrieve events.
      *
-     * @param handler
-     * @param reader
+     * @param handler event handler
+     * @param reader reader to use to feed the handler
      * @return handler resource
      */
     HandlerNotifier addHandler(EventHandler handler, EventReader reader);
@@ -141,7 +142,7 @@ public interface EventStream<E extends EventMessage>
      * Setting an event codec on a stream will take precedence over any matching
      * codec set at at a higher level.
      *
-     * @param codec
+     * @param codec event codec to use to decode event payload
      */
     void useCodec(EventCodec<?> codec);
 

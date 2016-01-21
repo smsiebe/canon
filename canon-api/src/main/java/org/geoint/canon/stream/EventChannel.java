@@ -31,8 +31,8 @@ public interface EventChannel {
      * Returns a stream by this name in this channel, creating the stream if it
      * does not exist.
      *
-     * @param streamName
-     * @param streamProperties
+     * @param streamName name of stream
+     * @param streamProperties stream properties
      * @return named stream within this channel
      */
     EventStream getStream(String streamName, Map<String, String> streamProperties);
