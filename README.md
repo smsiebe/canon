@@ -1,11 +1,7 @@
 canon
 =====
 
-Event Stream Framework
-
-Canon is a Government Open Source (GOSS) project funded by the US Army G2 
-GEOINT office to develop a specialized distributed sequential event store.  
-
+Canon is a specialized distributed sequential event store. 
 
 ** Program Background
 
