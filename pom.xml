@@ -62,7 +62,6 @@
     
     <modules>
         <module>canon-api</module>
-        <module>canon-spi</module>
     </modules>
    
    
