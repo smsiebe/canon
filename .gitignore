@@ -1,5 +1,8 @@
+#maven
 /target/
 */target/*
+
+#netbeans
 nb-configuration.xml
 
 #remove any backup files
