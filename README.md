@@ -1,9 +1,11 @@
 canon
 =====
 
-Canon is a specialized distributed sequential event store. 
+Event Stream Framework
 
-** Program Background
+Canon is a specialized distributed sequential event store.  
+
+**Program Background**
 
    Canon is the backbone of the [terpene](https://terpene.geoint.org)
 platform, providing a communication and data persistence framework to realize 

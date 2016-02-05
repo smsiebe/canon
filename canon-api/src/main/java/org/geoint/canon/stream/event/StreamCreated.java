@@ -15,6 +15,7 @@
  */
 package org.geoint.canon.stream.event;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -22,12 +23,20 @@ import java.util.Objects;
  *
  * @author steve_siebert
  */
-public class StreamCreated {
+public class StreamCreated implements Serializable {
 
+    private final long serializableVersionUID = 1L;
+
+    private final String channelName;
     private final String streamName;
 
-    public StreamCreated(String streamName) {
+    public StreamCreated(String channelName, String streamName) {
+        this.channelName = channelName;
         this.streamName = streamName;
+    }
+
+    public String getChannelName() {
+        return channelName;
     }
 
     public String getStreamName() {
@@ -36,18 +45,23 @@ public class StreamCreated {
 
     @Override
     public String toString() {
-        return String.format("Stream '%s' created.", streamName);
+        return String.format("Stream '%s' was created on channel '%s'.",
+                streamName, channelName);
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.streamName);
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.channelName);
+        hash = 89 * hash + Objects.hashCode(this.streamName);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -55,7 +69,13 @@ public class StreamCreated {
             return false;
         }
         final StreamCreated other = (StreamCreated) obj;
-        return Objects.equals(this.streamName, other.streamName);
+        if (!Objects.equals(this.channelName, other.channelName)) {
+            return false;
+        }
+        if (!Objects.equals(this.streamName, other.streamName)) {
+            return false;
+        }
+        return true;
     }
 
 }

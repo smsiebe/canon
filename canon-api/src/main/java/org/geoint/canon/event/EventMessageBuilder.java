@@ -91,13 +91,11 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event event content
-     * @throws EventCodecException thrown if no codec could be found or the
-     * discovered codec could not be used to encode this object type
      * @throws StreamAppendException if there was a problem appending to the
      * stream
-     *
      */
-    void event(Object event) throws EventCodecException, StreamAppendException;
+    void event(Object event)
+            throws StreamAppendException;
 
     /**
      * Terminating method providing the event message payload and a specific
@@ -110,11 +108,9 @@ public interface EventMessageBuilder {
      * @param <T> event type
      * @param event event
      * @param codec codec for event
-     * @throws EventCodecException thrown if the codec is invalid or could not
-     * be used to encode this object type
      * @throws StreamAppendException if there was a problem appending to the
      * stream
      */
     <T> void event(T event, EventCodec<T> codec)
-            throws EventCodecException, StreamAppendException;
+            throws StreamAppendException;
 }

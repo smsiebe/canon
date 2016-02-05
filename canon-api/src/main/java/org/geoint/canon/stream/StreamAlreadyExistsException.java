@@ -15,30 +15,29 @@
  */
 package org.geoint.canon.stream;
 
-import org.geoint.canon.event.EventException;
-
 /**
  * Thrown if there there is a stream name collision.
  * 
  * @author Steve Siebert
  */
-public class StreamAlreadyExistsException extends EventException {
-
-    private final String streamName;
+public class StreamAlreadyExistsException extends StreamInitializationException {
 
     public StreamAlreadyExistsException(String streamName) {
-        super(message(streamName));
-        this.streamName = streamName;
+        super(streamName, message(streamName));
+    }
+
+    public StreamAlreadyExistsException(String streamName, String message) {
+        super(streamName, message);
+    }
+
+    public StreamAlreadyExistsException(String streamName, String message, Throwable cause) {
+        super(streamName, message, cause);
     }
 
     public StreamAlreadyExistsException(String streamName, Throwable cause) {
-        super(message(streamName), cause);
-        this.streamName = streamName;
+        super(streamName, message(streamName), cause);
     }
 
-    public String getStreamName() {
-        return streamName;
-    }
 
     private static String message(String streamName) {
         return String.format("Stream '%s' already exists.",streamName);

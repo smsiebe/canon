@@ -1,5 +1,6 @@
 package org.geoint.canon.stream.event;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -12,8 +13,9 @@ import java.util.Objects;
  * @see SanitizeEvent
  * @author steve_siebert
  */
-public class EventSanitized {
+public class EventSanitized implements Serializable {
 
+    private final long serializableVersionUID = 1L;
     private final String streamName;
     private final String futureSanitizingEvent;
     private final ZonedDateTime dateTimeSanitized;

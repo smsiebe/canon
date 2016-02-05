@@ -19,7 +19,7 @@ public abstract class TypedEventHandler<T> implements EventHandler {
 
     @Override
     public void handle(AppendedEventMessage event) throws Exception {
-        if (!event.getEventType().equalsIgnoreCase(codec.getSupportedEventType())) {
+        if (!codec.isSupported(event.getEventType())) {
             return;
         }
 

@@ -71,9 +71,8 @@ public interface EventStream<E extends EventMessage>
      * stream, starting at the first event in the stream.
      *
      * @param handler event handler
-     * @return handler resource
      */
-    HandlerNotifier addHandler(EventHandler handler);
+    void addHandler(EventHandler handler);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -81,9 +80,8 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler event handler
      * @param filter filters events before they are provided to the handler
-     * @return handler resource
      */
-    HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
+    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter);
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -91,10 +89,9 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler event handler
      * @param sequence stream position to start
-     * @return handler resource
      * @throws UnknownEventException if the provided sequence is invalid
      */
-    HandlerNotifier addHandler(EventHandler handler, String sequence)
+    void addHandler(EventHandler handler, String sequence)
             throws UnknownEventException;
 
     /**
@@ -104,10 +101,9 @@ public interface EventStream<E extends EventMessage>
      * @param handler event handler
      * @param filter filters events before they are provided to the handler
      * @param sequence stream position to start
-     * @return handler resource
      * @throws UnknownEventException if the provided sequence is invalid
      */
-    HandlerNotifier addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
+    void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
             String sequence) throws UnknownEventException;
 
     /**
@@ -115,9 +111,8 @@ public interface EventStream<E extends EventMessage>
      *
      * @param handler event handler
      * @param reader reader to use to feed the handler
-     * @return handler resource
      */
-    HandlerNotifier addHandler(EventHandler handler, EventReader reader);
+    void addHandler(EventHandler handler, EventReader reader);
 
     /**
      * List the handlers currently registered to the stream.
@@ -127,7 +122,14 @@ public interface EventStream<E extends EventMessage>
      *
      * @return collection of handlers registered with the stream
      */
-    Collection<HandlerNotifier> listHandlers();
+    Collection<EventHandler> listHandlers();
+
+    /**
+     * Remove an EventHandler from event notifications on this stream.
+     *
+     * @param handler handler to remove
+     */
+    void removeHandler(EventHandler handler);
 
     /**
      * Create a new EventAppender to add new events to the stream.

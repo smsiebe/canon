@@ -36,9 +36,8 @@ public abstract class EventAppenderDecorator implements EventAppender {
     }
 
     @Override
-    public Future<EventsAppended> append() throws StreamAppendException {
+    public EventsAppended append() throws StreamAppendException {
         return appender.append();
     }
-
 
 }

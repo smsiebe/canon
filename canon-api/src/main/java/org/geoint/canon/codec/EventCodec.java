@@ -28,12 +28,13 @@ import org.geoint.canon.event.EventMessage;
 public interface EventCodec<E> {
 
     /**
-     * Event type supported by this codec.
-     *
-     * @return true if this codec can encode/decode this event
+     * Determine if this codec can encode/decode this provided event type.
+     * 
+     * @param eventType event type/name 
+     * @return true if this codec can support this event type, otherwise false
      */
-    String getSupportedEventType();
-
+    boolean isSupported(String eventType);
+    
     /**
      * Convert the domain event instance to encoded event content.
      *

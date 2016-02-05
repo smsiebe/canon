@@ -65,8 +65,10 @@ public abstract class EventReaderDecorator implements EventReader {
      * @param timeout time to wait for event
      * @param unit time unit of timeout
      * @return next event or null
-     * @throws StreamReadException if there was a problem reading from the stream
-     * @throws InterruptedException if the thread waiting for the next event was interrupted
+     * @throws StreamReadException if there was a problem reading from the
+     * stream
+     * @throws InterruptedException if the thread waiting for the next event was
+     * interrupted
      */
     @Override
     public Optional<AppendedEventMessage> poll(long timeout, TimeUnit unit)
@@ -89,8 +91,10 @@ public abstract class EventReaderDecorator implements EventReader {
      * {@link EventReaderDecorator#poll() } for most cases.
      *
      * @return next event on the stream
-     * @throws StreamReadException if there was a problem reading from the stream
-     * @throws InterruptedException if the thread waiting for the next event was interrupted
+     * @throws StreamReadException if there was a problem reading from the
+     * stream
+     * @throws InterruptedException if the thread waiting for the next event was
+     * interrupted
      */
     @Override
     @SuppressWarnings("SleepWhileInLoop")
@@ -103,6 +107,16 @@ public abstract class EventReaderDecorator implements EventReader {
         return event.get();
     }
 
+    @Override
+    public Optional<AppendedEventMessage> poll() throws StreamReadException {
+        return reader.poll();
+    }
+
+    @Override
+    public AppendedEventMessage read() throws StreamReadException {
+        return reader.read();
+    }
+
     /**
      * Default implementation delegates call to decorated reader.
      *
@@ -110,7 +124,8 @@ public abstract class EventReaderDecorator implements EventReader {
      * @throws UnknownEventException if there isn't such a position
      */
     @Override
-    public void setPosition(String sequence) throws UnknownEventException {
+    public void setPosition(String sequence) 
+            throws StreamReadException, UnknownEventException {
         reader.setPosition(sequence);
     }
 

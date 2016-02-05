@@ -54,7 +54,6 @@ public interface EventAppender {
      * @throws StreamAppendException thrown if there was a problem appending the
      * events to the stream
      */
-    Future<EventsAppended> append() throws StreamAppendException;
-
+    EventsAppended append() throws StreamAppendException;
 
 }

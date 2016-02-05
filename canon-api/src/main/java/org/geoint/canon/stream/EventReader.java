@@ -22,19 +22,22 @@ import org.geoint.canon.event.UnknownEventException;
 import org.geoint.canon.event.AppendedEventMessage;
 
 /**
- * Sequential event reader.
- *
+ * Sequentially reads events from an {@link EventStream stream}.
+ * <p>
+ * EventReader instances are <b>NOT</b> thread-safe.
  * @author steve_siebert
  */
 public interface EventReader extends Closeable, AutoCloseable {
 
     /**
+     * Name of the channel of which this stream belongs.
      *
      * @return name of the channel
      */
     String getChannelName();
 
     /**
+     * Channel-unique name of this stream.
      *
      * @return name of the stream
      */
@@ -49,8 +52,18 @@ public interface EventReader extends Closeable, AutoCloseable {
     boolean hasNext();
 
     /**
-     * Returns the next event in the stream or null if there are no events after
-     * the readers current position.
+     * Returns the current event at the reader position, not changing the
+     * position of the reader.
+     *
+     * @return current event at the reader position
+     * @throws StreamReadException thrown if there is a problem reading the
+     * current event from the stream
+     */
+    public abstract AppendedEventMessage read() throws StreamReadException;
+
+    /**
+     * Returns the next event in the stream, if exists, or null if there are no
+     * events after the readers current position.
      *
      * @return next event or null
      * @throws StreamReadException thrown if there is a problem reading events
@@ -59,8 +72,8 @@ public interface EventReader extends Closeable, AutoCloseable {
     Optional<AppendedEventMessage> poll() throws StreamReadException;
 
     /**
-     * Returns the next event in the stream, waiting up to the specified time
-     * for an event.
+     * Returns the next event in the stream, if exists, or waiting up to the
+     * specified time for an event returning null if no event exists at timeout.
      *
      * @param timeout how long to wait
      * @param unit time unit of timeout
@@ -72,7 +85,7 @@ public interface EventReader extends Closeable, AutoCloseable {
             throws StreamReadException, InterruptedException;
 
     /**
-     * Returns the next event in the stream, waiting if necessary.
+     * Returns the next event in the stream, waiting forever if necessary.
      *
      * @return next event in the stream
      * @throws StreamReadException thrown if there is a problem reading events
@@ -85,10 +98,13 @@ public interface EventReader extends Closeable, AutoCloseable {
      * Set the readers position.
      *
      * @param sequence event sequence
+     * @throws StreamReadException thrown if there was a problem setting the
+     * stream position
      * @throws UnknownEventException thrown if the provided event id is not
      * known to the underlying channel
      */
-    void setPosition(String sequence) throws UnknownEventException;
+    void setPosition(String sequence)
+            throws StreamReadException, UnknownEventException;
 
     /**
      * Returns the current position of the reader.

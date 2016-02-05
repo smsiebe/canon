@@ -15,6 +15,7 @@
  */
 package org.geoint.canon.stream.event;
 
+import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +29,8 @@ import org.geoint.canon.event.AppendedEventMessage;
  * @author steve_siebert
  */
 public final class EventsAppended {
+
+    private final long serializableVersionUID = 1L;
 
     private final String streamName;
     private final ZonedDateTime appendTime;

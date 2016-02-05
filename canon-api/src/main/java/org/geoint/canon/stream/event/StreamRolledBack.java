@@ -15,6 +15,7 @@
  */
 package org.geoint.canon.stream.event;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -23,7 +24,9 @@ import java.util.Objects;
  *
  * @author steve_siebert
  */
-public final class StreamRolledBack {
+public final class StreamRolledBack implements Serializable {
+
+    private final long serializableVersionUID = 1L;
 
     private final String streamName;
     private final String lastEventId;

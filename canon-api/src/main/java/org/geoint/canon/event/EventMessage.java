@@ -15,9 +15,13 @@
  */
 package org.geoint.canon.event;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.geoint.canon.codec.EventCodec;
+import org.geoint.canon.codec.EventCodecException;
 
 /**
  * A domain-defined occurrence.
@@ -99,19 +103,19 @@ public interface EventMessage {
      */
     String getHeader(String headerName, Supplier<String> defaultValue);
 
-    /**
-     * Return the event content.
-     * 
-     * @return event payload
-     */
-    EventPayload getPayload();
-//    
 //    /**
-//     * Domain event as byte stream.
-//     *
-//     * @return event content stream
+//     * Return the event content.
+//     * 
+//     * @return event payload
 //     */
-//    InputStream getEventContent();
+//    EventPayload getPayload();
+    
+    /**
+     * Domain event content byte stream.
+     *
+     * @return event content stream
+     */
+    InputStream getEventContent();
 //
 //    /**
 //     * Return the domain event type wrapped by this message using the provided

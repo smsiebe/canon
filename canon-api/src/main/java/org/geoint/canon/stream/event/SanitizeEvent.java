@@ -1,5 +1,6 @@
 package org.geoint.canon.stream.event;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -13,8 +14,9 @@ import java.util.Objects;
  * @see EventSanitized
  * @author steve_siebert
  */
-public class SanitizeEvent {
+public class SanitizeEvent implements Serializable {
 
+    private final long serializableVersionUID = 1L;
     private final String streamName;
     private final String sanitizedEventId;
     private final String justification;

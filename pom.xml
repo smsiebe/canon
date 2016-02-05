@@ -62,6 +62,16 @@
     
     <modules>
         <module>canon-api</module>
+        <module>canon-spi</module>
+        <module>canon-guide-idGenerator</module>
+        <!--
+        <module>canon-core</module>
+        <module>canon-server</module>
+        <module>canon-client</module>
+        <module>canon-replication</module>
+        <module>canon-file-stream</module>
+        <module>canon-rest-stream</module>
+        -->
     </modules>
    
    
