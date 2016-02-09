@@ -63,9 +63,9 @@
     <modules>
         <module>canon-api</module>
         <module>canon-spi</module>
+        <module>canon-core</module>
         <module>canon-guide-idGenerator</module>
         <!--
-        <module>canon-core</module>
         <module>canon-server</module>
         <module>canon-client</module>
         <module>canon-replication</module>
