@@ -34,7 +34,7 @@ import org.geoint.canon.event.UnknownEventException;
  * @param <E> event message type
  */
 public interface EventStream<E extends EventMessage>
-        extends CodecResolver, Closeable {
+        extends CodecResolver, Closeable, AutoCloseable {
 
     /**
      * Channel-unique name of the stream.
@@ -90,9 +90,11 @@ public interface EventStream<E extends EventMessage>
      * @param handler event handler
      * @param sequence stream position to start
      * @throws UnknownEventException if the provided sequence is invalid
+     * @throws StreamReadException if the stream could not be accessed to set
+     * the position
      */
     void addHandler(EventHandler handler, String sequence)
-            throws UnknownEventException;
+            throws UnknownEventException, StreamReadException;
 
     /**
      * Registers an event handler which will be called for each event on the
@@ -102,9 +104,11 @@ public interface EventStream<E extends EventMessage>
      * @param filter filters events before they are provided to the handler
      * @param sequence stream position to start
      * @throws UnknownEventException if the provided sequence is invalid
+     * @throws StreamReadException if the stream could not be accessed to set
+     * the position
      */
     void addHandler(EventHandler handler, Predicate<AppendedEventMessage> filter,
-            String sequence) throws UnknownEventException;
+            String sequence) throws UnknownEventException, StreamReadException;
 
     /**
      * Registers an event handler with the reader it uses to retrieve events.

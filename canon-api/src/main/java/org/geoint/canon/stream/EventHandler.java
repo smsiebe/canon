@@ -39,9 +39,9 @@ public interface EventHandler {
      * Next sequential event on the stream.
      *
      * @param event next event to handle
-     * @throws Exception thrown if there is a problem processing the event
+     * @throws Throwable thrown if there is a problem processing the event
      */
-    void handle(AppendedEventMessage event) throws Exception;
+    void handle(AppendedEventMessage event) throws Throwable;
 
     /**
      * Called when the handler is unable to process an event.
@@ -51,7 +51,7 @@ public interface EventHandler {
      * @return action to take
      */
     default EventHandlerAction onFailure(AppendedEventMessage event,
-            Exception ex) {
+            Throwable ex) {
         LOGGER.log(Level.WARNING,
                 String.format("Unable to handle event %s of type %s,"
                         + " removing handler.",

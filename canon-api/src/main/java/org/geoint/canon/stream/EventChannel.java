@@ -1,5 +1,6 @@
 package org.geoint.canon.stream;
 
+import java.io.Closeable;
 import java.util.Collection;
 import java.util.Optional;
 import org.geoint.canon.codec.EventCodec;
@@ -9,7 +10,7 @@ import org.geoint.canon.codec.EventCodec;
  *
  * @author steve_siebert
  */
-public interface EventChannel {
+public interface EventChannel extends Closeable, AutoCloseable{
 
     /**
      * Unique name of the channel.
@@ -46,6 +47,10 @@ public interface EventChannel {
     /**
      * Returns a stream by this name in this channel, creating the stream if it
      * does not exist.
+     * <p>
+     * Implementation note: channels must publish a ChannelCreated event 
+     * upon initial creation, and a SteamCreated event on each new stream 
+     * creation, to the channels own admin stream.
      *
      * @param streamName name of stream
      * @return named stream within this channel
