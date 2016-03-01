@@ -32,6 +32,7 @@ an application.
 
 
 **Canon and Terpene**
+
    Canon is the backbone of the [terpene](https://terpene.geoint.org)
 platform, providing a communication and data persistence framework to realize 
 the data confidentiality, complete non-repudiation, and availability 
