@@ -4,6 +4,7 @@
 
 #netbeans
 nb-configuration.xml
+*/nb-project/*
 
 #remove any backup files
 *~
