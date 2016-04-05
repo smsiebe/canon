@@ -17,7 +17,6 @@ package org.geoint.canon.event;
 
 import java.io.InputStream;
 import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.codec.EventCodecException;
 import org.geoint.canon.stream.StreamAppendException;
 
 /**
@@ -75,10 +74,11 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event event content
+     * @return appended event
      * @throws StreamAppendException if there was a problem appending to the
      * stream
      */
-    void event(InputStream event) throws StreamAppendException;
+    AppendedEventMessage event(InputStream event) throws StreamAppendException;
 
     /**
      * Terminating method providing the event message payload.
@@ -91,10 +91,11 @@ public interface EventMessageBuilder {
      * will be ignored.
      *
      * @param event event content
+     * @return appended event
      * @throws StreamAppendException if there was a problem appending to the
      * stream
      */
-    void event(Object event)
+    AppendedEventMessage event(Object event)
             throws StreamAppendException;
 
     /**
@@ -108,9 +109,10 @@ public interface EventMessageBuilder {
      * @param <T> event type
      * @param event event
      * @param codec codec for event
+     * @return appended event
      * @throws StreamAppendException if there was a problem appending to the
      * stream
      */
-    <T> void event(T event, EventCodec<T> codec)
+    <T> AppendedEventMessage event(T event, EventCodec<T> codec)
             throws StreamAppendException;
 }

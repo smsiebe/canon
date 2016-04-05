@@ -18,7 +18,7 @@ package org.geoint.canon.impl.stream;
 import java.util.List;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.stream.event.EventsAppended;
+import org.geoint.canon.stream.event.EventAppended;
 
 /**
  * Used by {@link MemoryEventAppender} as a callback function when executing the
@@ -37,6 +37,6 @@ public interface EventsAppender {
      * @throws StreamAppendException thrown if the events failed to be appended
      * to the event stream
      */
-    EventsAppended append(List<EventMessage> events)
+    EventAppended append(List<EventMessage> events)
             throws StreamAppendException;
 }

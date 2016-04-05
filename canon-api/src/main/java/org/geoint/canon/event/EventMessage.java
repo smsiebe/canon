@@ -15,13 +15,10 @@
  */
 package org.geoint.canon.event;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import org.geoint.canon.codec.EventCodec;
-import org.geoint.canon.codec.EventCodecException;
 
 /**
  * A domain-defined occurrence.

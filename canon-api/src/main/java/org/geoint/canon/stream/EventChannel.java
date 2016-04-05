@@ -6,18 +6,14 @@ import java.util.Optional;
 import org.geoint.canon.codec.EventCodec;
 
 /**
- * A grouping of related event streams.
- *
+ * A grouping of event streams available from a source.
+ * <p>
+ * An event channel is mainly administrative, providing a means to discover 
+ * the event streams available from a single event source.
+ * 
  * @author steve_siebert
  */
 public interface EventChannel extends Closeable, AutoCloseable{
-
-    /**
-     * Unique name of the channel.
-     *
-     * @return channel name
-     */
-    String getChannelName();
 
     /**
      * Stream used by the channel to manage its own administration.

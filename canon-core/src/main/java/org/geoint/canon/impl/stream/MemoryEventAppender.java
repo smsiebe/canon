@@ -22,7 +22,7 @@ import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.StreamAppendException;
-import org.geoint.canon.stream.event.EventsAppended;
+import org.geoint.canon.stream.event.EventAppended;
 
 /**
  * Appender which stores the events appended against it on heap memory until
@@ -58,7 +58,7 @@ public class MemoryEventAppender extends AbstractEventAppender {
     }
 
     @Override
-    public EventsAppended append() throws StreamAppendException {
+    public EventAppended append() throws StreamAppendException {
         return doAppend.append(appenderMessages);
     }
 

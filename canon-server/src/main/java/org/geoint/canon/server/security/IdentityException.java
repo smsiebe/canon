@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geoint.canon.stream;
+package org.geoint.canon.server.security;
 
 /**
- * Functional callback which appends events to an {@link EventStream} using the
- * provided {@link EventAppender}.
  *
- * @author steve_siebert
  */
-@FunctionalInterface
-public interface EventSupplier {
+public class IdentityException extends Exception {
 
-    void append(EventAppender a) throws StreamAppendException;
+    public IdentityException() {
+    }
+
+    public IdentityException(String message) {
+        super(message);
+    }
+
+    public IdentityException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public IdentityException(Throwable cause) {
+        super(cause);
+    }
+
 }

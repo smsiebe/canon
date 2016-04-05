@@ -21,4 +21,11 @@
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.geoint</groupId>
+            <artifactId>acetate</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 </project>

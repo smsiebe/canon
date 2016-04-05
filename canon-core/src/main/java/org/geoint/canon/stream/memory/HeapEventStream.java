@@ -22,7 +22,7 @@ import org.geoint.canon.impl.stream.AbstractEventStream;
 import org.geoint.canon.impl.stream.MemoryEventAppender;
 import org.geoint.canon.stream.EventAppender;
 import org.geoint.canon.stream.EventReader;
-import org.geoint.canon.stream.event.EventsAppended;
+import org.geoint.canon.stream.event.EventAppended;
 import org.geoint.canon.stream.StreamReadException;
 
 /**
@@ -81,7 +81,7 @@ public class HeapEventStream extends AbstractEventStream {
                         .forEach(messages::add);
                     }
 
-                    return new EventsAppended(streamName, appendedMessages);
+                    return new EventAppended(streamName, appendedMessages);
 
                 });
     }

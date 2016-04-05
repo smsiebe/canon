@@ -18,10 +18,12 @@ package org.geoint.canon.stream;
 import java.io.Closeable;
 import java.util.Collection;
 import java.util.function.Predicate;
+import org.geoint.canon.codec.CodecNotFoundException;
 import org.geoint.canon.codec.CodecResolver;
 import org.geoint.canon.event.EventMessage;
 import org.geoint.canon.codec.EventCodec;
 import org.geoint.canon.event.AppendedEventMessage;
+import org.geoint.canon.event.EventMessageBuilder;
 import org.geoint.canon.event.UnknownEventException;
 
 /**
@@ -135,12 +137,49 @@ public interface EventStream<E extends EventMessage>
      */
     void removeHandler(EventHandler handler);
 
+//    /**
+//     * Create a new EventAppender to add new events to the stream.
+//     *
+//     * @return event appender
+//     */
+//    EventAppender newAppender();
     /**
-     * Create a new EventAppender to add new events to the stream.
+     * Append the event message to the stream.
      *
-     * @return event appender
+     * @param msg message to append to the stream
+     * @return appended event message
+     * @throws StreamAppendException thrown if there is a problem appending and
+     * event to the contextual stream
      */
-    EventAppender newAppender();
+    AppendedEventMessage append(EventMessage msg)
+            throws StreamAppendException;
+
+    /**
+     * Returns an event message builder used to construct a new EventMessage to
+     * append to the stream.
+     * <p>
+     * The event will not be appended to the stream until a terminating method
+     * on the {@link EventMessageBuilder} is executed.
+     *
+     * @param eventType event type name
+     * @return message builder
+     */
+    EventMessageBuilder createMessage(String eventType);
+
+    /**
+     * Returns an event message builder used to construct a new EventMessage to
+     * append to the stream.
+     * <p>
+     * The event will not be appended to the stream until a terminating method
+     * on the {@link EventMessageBuilder} is executed.
+     *
+     * @param eventClass class representing the event message content
+     * @return message builder
+     * @throws CodecNotFoundException if a codec supporting the specified event
+     * class could not be found
+     */
+    EventMessageBuilder createMessage(Class<?> eventClass)
+            throws CodecNotFoundException;
 
     /**
      * Assigns a specific to use to read/write event payloads on this stream.

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.geoint.canon</groupId>
+        <artifactId>canon</artifactId>
+        <version>1.0</version>
+    </parent>
+    <artifactId>canon-server</artifactId>
+    <packaging>jar</packaging>
+    
+    <properties>
+        <jetty.version>9.3.7.v20160115</jetty.version>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>canon-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>canon-spi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>canon-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geoint</groupId>
+            <artifactId>acetate-java</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geoint</groupId>
+            <artifactId>acetate-format</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geoint</groupId>
+            <artifactId>acetate</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+</project>

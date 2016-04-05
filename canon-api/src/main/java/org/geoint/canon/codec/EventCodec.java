@@ -29,12 +29,12 @@ public interface EventCodec<E> {
 
     /**
      * Determine if this codec can encode/decode this provided event type.
-     * 
-     * @param eventType event type/name 
+     *
+     * @param eventType event type/name
      * @return true if this codec can support this event type, otherwise false
      */
     boolean isSupported(String eventType);
-    
+
     /**
      * Convert the domain event instance to encoded event content.
      *
@@ -48,7 +48,8 @@ public interface EventCodec<E> {
             throws IOException, EventCodecException;
 
     /**
-     * Converts an EventMessage to a domain event.
+     * Converts the {@link EventMessage#getEventContent() content} of an
+     * EventMessage to a domain event.
      *
      * @param e event message
      * @return domain event instance

@@ -20,9 +20,11 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.geoint.canon.codec.CodecResolver;
@@ -38,58 +40,51 @@ import org.geoint.canon.stream.ChannelInitializationException;
 import org.geoint.canon.stream.EventChannel;
 import org.geoint.canon.stream.StreamAppendException;
 import org.geoint.canon.stream.StreamInitializationException;
-import org.geoint.canon.stream.event.ChannelCreated;
 import org.geoint.canon.stream.event.StreamCreated;
 
 /**
- * A Canon event database instance.
+ * Canon event database.
+ * <p>
+ * A Canon instance is comprised of multiple event streams originating from one
+ * or more event channels. The canon instance will expose each stream (it has
+ * access to) as if it is a local stream, effectively making a Canon instance
+ * seem like a single coherent EventChannel.
+ *
+ * <h2>Connecting to Event Channels</h2>
+ * The channels may be local or remote and each may contain zero or more
+ * streams. If two or more channels provide streams by the same name they will
+ * attempt to be merged.
  *
  * @author steve_siebert
  */
 public final class Canon {
 
-    /**
-     * name of global canon channel
-     */
-    public static final String DEFAULT_CANON_CHANNEL_NAME = "org.geoint.canon";
-    /**
-     * name of global admin stream name
-     */
-    public static final String CANON_ADMIN_STREAM = "canon.admin";
-
     private final HierarchicalCodecResolver codecs;
-    private final Map<String, EventChannel> channels; //key is channel name
-    private final EventStream adminStream;
+    private final Set<EventChannel> channels = new HashSet<>();
+    private final EventStream canonAdminStream;
 
     private final EventHandler channelAdminCopyHandler;
 
-    private static final String DEFAULT_ADMIN_CHANNEL_URI
-            = String.format("mem://%s", DEFAULT_CANON_CHANNEL_NAME);
+    private static final String DEFAULT_ADMIN_CHANNEL_URI = "mem://org.geoint.canon";
     private static final Logger LOGGER = Logger.getLogger(Canon.class.getName());
 
-    private Canon(EventChannel canonAdminChannel, EventStream adminStream) {
+    private Canon(EventStream adminStream) {
+        
         LOGGER.log(Level.FINE, () -> String.format("Creating canon instance "
-                + "using admin channel %s", canonAdminChannel.toString()));
-
+                + "using admin channel %s", adminStream.toString()));
+        
         this.codecs = defaultCodecs();
-        this.channels = new HashMap<>();
-        this.channels.put(canonAdminChannel.getChannelName(), canonAdminChannel);
-        this.channels.put(DEFAULT_CANON_CHANNEL_NAME, canonAdminChannel);
-        this.adminStream = adminStream;
+        this.canonAdminStream = adminStream;
 
         //every channel admin stream managed by this canon instance will 
         //have certain events copied into the global admin stream
         this.channelAdminCopyHandler = (msg) -> {
             final String type = msg.getEventType();
 
-            if (type.contentEquals(StreamCreated.class.getName())
-                    || type.contentEquals(ChannelCreated.class.getName())) {
-                adminStream.newAppender().add(msg).append();
+            if (type.contentEquals(StreamCreated.class.getName())) {
+                canonAdminStream.append(msg);
             }
         };
-        //even the canon global admin channel is joined to the global admin stream
-        canonAdminChannel.getChannelAdminStream()
-                .addHandler(channelAdminCopyHandler);
     }
 
     /**
@@ -143,7 +138,7 @@ public final class Canon {
      * the canon instance
      *
      */
-    public static Canon newInstance(EventChannel adminChannel)
+    public static Canon newInstance(EventStream adminStream)
             throws CanonInitializationException {
 
         if (adminChannel == null) {
@@ -179,7 +174,7 @@ public final class Canon {
      * @return admin stream
      */
     public EventStream getAdminStream() {
-        return adminStream;
+        return canonAdminStream;
     }
 
     /**
@@ -296,7 +291,7 @@ public final class Canon {
         StreamCreated created
                 = new StreamCreated(channel.getChannelName(),
                         streamName);
-        adminStream.newAppender().create(StreamCreated.class.getName())
+        canonAdminStream.createMessage(StreamCreated.class.getName())
                 .event(created);
         return s;
 
